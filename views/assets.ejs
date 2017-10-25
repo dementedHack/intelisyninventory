@@ -1,0 +1,282 @@
+<html lang="en"><head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>Assets</title>
+
+</head>
+<body>
+
+
+<!--formden.js communicates with FormDen server to validate fields and submit via AJAX -->
+<script type="text/javascript" src="https://formden.com/static/cdn/formden.js"></script>
+
+<!-- Special version of Bootstrap that is isolated to content wrapped in .bootstrap-iso -->
+<link rel="stylesheet" href="https://formden.com/static/cdn/bootstrap-iso.css">
+
+<!--Font Awesome (added because you use icons in your prepend/append)-->
+<link rel="stylesheet" href="https://formden.com/static/cdn/font-awesome/4.4.0/css/font-awesome.min.css">
+
+<!-- Inline CSS based on choices in "Settings" tab -->
+<style>.bootstrap-iso .formden_header h2, .bootstrap-iso .formden_header p, .bootstrap-iso form{font-family: Arial, Helvetica, sans-serif; color: black}.bootstrap-iso form button, .bootstrap-iso form button:hover{color: white !important;} .asteriskField{color: red;}</style>
+
+<!-- HTML Form (wrapped in a .bootstrap-iso div) -->
+<div class="bootstrap-iso">
+ <div class="container-fluid">
+  <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="Login.html">Intelisyn Asset Management</a>
+  </div>
+  <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+          <li class="active"><a href="Dashboard.html">Dashboard</a></li>
+          <li><a href="#about">Marketplace</a></li>
+          <li><a href="#contact">Contact</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a id="logoutButton" href="">Logout</a></li>
+      </ul>
+  </div>
+  <!-- /.nav-collapse -->
+  <div class="row row-offcanvas row-offcanvas-left">
+        <div id="sidebarMenu">
+            <div class="col-xs-6 col-sm-2 sidebar-offcanvas" id="sidebar" role="navigation" >
+          <div class="sidebar-nav">
+              <ul class="nav" style="margin-top: 10px;">
+                  <li><a href="dashboard.html">Dashboard</a></li>
+                  <li class="active"><a href="Assetts.html">Assetts</a></li>
+                  <li class="nav-divider"></li>
+                  <li><a href="Auction_Real_Estate.html">Auction Real Estate</a></li>
+                  <li><a href="#">My Sales</a></li>
+                  <li><a href="#">Create Ad</a></li>
+                  <li class="nav-divider"></li>
+                  <li><a href="#">Billing Info</a></li>
+                  <li><a href="#">Account Settings</a></li>
+                  <li><a href="#">Help</a></li>
+              </ul>
+          </div>
+          <!--/.well -->
+      </div>
+  <div class="row">
+   <div class="col-md-6 col-sm-6 col-sm-10">
+    <div class="jumbotron">
+      <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
+      <h1>Assets</span></h1>
+    </div>
+    <div class="col-md-12" id="Hardware">
+    </div>
+    <div class="col-md-12" id="Software">
+    </div>
+    <div class="col-md-12" id="ComputerSystem">
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+</body>
+<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAqVtjnVwoi5HhyWnsW7qLNSwPGYaZ-2TA",
+    authDomain: "intelisynassetmanagement.firebaseapp.com",
+    databaseURL: "https://intelisynassetmanagement.firebaseio.com",
+    projectId: "intelisynassetmanagement",
+    storageBucket: "intelisynassetmanagement.appspot.com",
+    messagingSenderId: "241325053027"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<!-- Extra JavaScript/CSS added manually in "Settings" tab -->
+<!-- Include jQuery -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css">
+
+<script>
+
+  var ref;
+
+  // These are the arrays we insert data from the DB into. They will contain snapshot objects
+  var retrievedComputerSystemArray = [];
+  var retrievedSoftwareArray = [];
+  var retrievedHardwareArray = [];
+
+  // These are the arrays we insert data from the DB into. They will contain snapshot objects
+  var retrievedComputerSystemKeyArray = [];
+  var retrievedSoftwareKeyArray = [];
+  var retrievedHardwareKeyArray = [];
+
+  // These are the arrays we place the cell html code into. Each item will be a string of html.
+  var computerSystemHTMLArray = [];
+  var softwareHTMLArray = [];
+  var hardwareHTMLArray = [];
+
+    // Get current logged in user info
+  firebase.auth().onAuthStateChanged(function(UserInfo) {
+      grabAssetData(createCellFromArrayInfo);
+    if (UserInfo) {
+        // User is signed in.
+      self.currentUserUID = UserInfo.uid;
+      console.log(self.currentUserUID)
+    } else {
+        // No user is signed in. Redirect to login page
+        console.log("No one is logged in")
+    }
+  });
+  
+  function grabAssetData(){
+    grabAllDataOnceFromDatabase("ComputerSystem", retrievedComputerSystemArray, createCellFromArrayInfo);
+    grabAllDataOnceFromDatabase("Hardware", retrievedHardwareArray, createCellFromArrayInfo);
+    grabAllDataOnceFromDatabase("Software", retrievedSoftwareArray, createCellFromArrayInfo);
+  };
+
+
+// THis switch statement is messed up. Want each of the arrays to have the corresponding UIDs in them
+  function grabAllDataOnceFromDatabase(tableToQuery, array, callback){
+    //console.log(tableToQuery)
+    var keysArr;
+
+    ref = firebase.database().ref(tableToQuery).once("value", function(snapshot){
+      switch(tableToQuery) {
+          case "ComputerSystem":
+              array = snapshotToArray(snapshot, retrievedComputerSystemKeyArray);
+              keysArr = self.retrievedComputerSystemKeyArray
+              break;
+          case "Hardware":
+              array = snapshotToArray(snapshot, retrievedHardwareArray);
+              keysArr = self.retrievedHardwareKeyArray;
+              break;
+          case "Software":
+              array = snapshotToArray(snapshot, retrievedSoftwareArray);
+              keysArr = self.retrievedSoftwareKeyArray;
+              break;    
+          default:
+              console.log("default case")
+      }
+      //array = snapshotToArray(snapshot, "retrieved" + tableToQuery + "KeyArray");
+
+    }).then(function(){
+      //console.log(array)
+      //callback is createCellFromArrayInfo
+      callback(array, tableToQuery, replaceHTMLinDiv, keysArr);
+    });
+  }
+    
+
+
+  var newArray2 = [];
+
+
+    var counter = 0;
+
+
+  // Convert the snapshot we receive from the DB into an array by pushing each snapshot child into the global array.
+  function snapshotToArray(snapshot, keysArray){
+
+    counter += 1;
+    var returnArr = [];
+    var newArray = {};
+
+    snapshot.forEach(function(childSnapshot) {
+
+
+
+        var item = childSnapshot.val();
+        item.key = childSnapshot.key;
+
+        returnArr.push(item);
+
+        newArray[keysArray] = item.key;
+        newItem = (newArray[keysArray])
+
+
+        keysArray.push(item.key)
+
+    });
+
+
+
+    //console.log(keysArray);
+    keysArray = keysArray;
+    //console.log(counter)
+    switch(counter) {
+    	// The first case handles the computer system array
+      case 1:
+          self.retrievedComputerSystemKeyArray = keysArray;
+          break;
+      case 2:
+      	  
+          self.retrievedHardwareKeyArray = keysArray;
+           //console.log(retrievedSoftwareKeyArray)
+          break;
+      case 3:
+          self.retrievedSoftwareKeyArray = keysArray;
+          break;    
+      default:
+          console.log("default case")
+ 	}
+    return returnArr;
+  }
+
+  function createCellFromArrayInfo(originalArray, category, callback, keysArr){
+    var tempArray = [];
+    var htmlToAppendToArray = '<h2>' + category + '</h2><hr><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr></thead><tbody>';
+
+    for(var i =0; i < originalArray.length; i++){
+      htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class=' + category + '><td>' + originalArray[i].assignedTo + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].vendor + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].model + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].description + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].quantity + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].serialNumber + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].subCategory + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].purchaseDate + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].assignmentDate + '</td>';
+      htmlToAppendToArray += '<td>' + originalArray[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + keysArr[i] + '""></i></td>';
+      htmlToAppendToArray += '</tr>';
+    }
+    htmlToAppendToArray += '</tbody></table>';
+    tempArray.push(htmlToAppendToArray)
+    //console.log(htmlToAppendToArray)
+    if (category === "Computer System") {
+      category = "ComputerSystem"
+    }
+    replaceHTMLinDiv("#", category, htmlToAppendToArray);
+  }
+  
+  function replaceHTMLinDiv(selector, divToReplace, newHTMLToAppendToDiv) {
+    //console.log(selector + divToReplace)
+    $(selector + divToReplace).html(newHTMLToAppendToDiv);
+  }
+
+  // Handle the user clicking the remove ad icon
+  $(document).on("click", ".fa-trash", function(){
+    var adToRemove = $(event.target).context.dataset.id;
+    var r = confirm("You are about to delete an item!\nClick OK to continue operation or Cancel to dismiss.\n");
+      if (r == true) {
+        console.log(adToRemove);
+        var tableToRemoveItemFrom = (this.parentNode.parentNode.getAttribute("class"));
+        $("#" + adToRemove).remove();
+        console.log(tableToRemoveItemFrom);
+        ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).remove();
+        };
+
+      var indexToRemove = this.id;
+      //console.log(indexToRemove)
+      //self.usersAdList.splice(indexToRemove, 1);
+      //replaceHTMLinPage("UserAdCellContainer", "");
+      //createAdCell();
+      // } else {
+      //     // What do we do if the user clicks cancel? Probably nothing
+      // }
+  });
+
+</script>
+</html>
