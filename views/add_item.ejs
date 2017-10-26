@@ -1,7 +1,7 @@
 <html lang="en"><head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="utf-8">
-  <title>Asset Addition!!</title>
+  <title>Add Item</title>
 
 </head>
 <body>
@@ -64,7 +64,7 @@
    <div class="col-md-6 col-sm-6 col-sm-10">
     <div class="jumbotron">
       <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
-      <h1>Add Asset</span></h1>
+      <h1>Add Item</span></h1>
     </div>
     <form action="javascript:void(0);" class="form-horizontal" method="GET">
       <div class="form-group ">
@@ -309,6 +309,7 @@
     var subCategory = [["Peripheral", "Audio", "Telephony", "Networking", "Storage", "CPU", "Memory", "Printer","Toner"], ["Project Management", "O.S.", "Application Management"], ["Laptop", "Desktop"]] 
 
     var ref;
+    var parentId;
     // Get current logged in user info
     firebase.auth().onAuthStateChanged(function(UserInfo) {
     if (UserInfo) {
@@ -319,6 +320,9 @@
         // No user is signed in. Redirect to login page
         console.log("No one is logged in")
     }
+
+    parentItemId = getUrlParameter('parentId');
+    console.log(parentItemId);
   });
 
   var newItemPropertiesArray = [];
@@ -350,27 +354,85 @@
     callback();
   }
 
-  function pushNewKeyIntoDatabaseAndAssignToVariable(callback) {
-    ref = firebase.database().ref("Asset");
-    newPostKey = ref.push().key;
-    saveNewItemToCorrespondingDatabase(newPostKey);
+  function pushNewKeyIntoDatabaseAndAssignToVariable(callback, tableReference) {
+    if (self.parentItemId){
+      console.log("Parent ID exists")
+      ref = firebase.database().ref("ComputerSystem").child(parentItemId).child("components");
+      newPostKey = ref.push().key;
+      console.log(parentItemId)
+      saveNewItemToCorrespondingDatabase(newPostKey, 'ComputerSystem', parentItemId);
+    } else { 
+      ref = firebase.database().ref("Asset");
+      newPostKey = ref.push().key;
+      saveNewItemToCorrespondingDatabase(newPostKey, newItemPropertiesArray[6], null);
+    }
   }
 
-  function saveNewItemToCorrespondingDatabase(postKey) {
-    ref = firebase.database().ref(newItemPropertiesArray[6]).child(postKey).set({
-      "assignedTo" : newItemPropertiesArray[0],
-      "vendor" : newItemPropertiesArray[1],
-      "model" : newItemPropertiesArray[2],
-      "quantity" : newItemPropertiesArray[3],
-      "description" : newItemPropertiesArray[4],
-      "serialNumber" : newItemPropertiesArray[5],
-      "category" : newItemPropertiesArray[6],
-      "subCategory" : newItemPropertiesArray[7],
-      "purchaseDate" : newItemPropertiesArray[8],
-      "assignmentDate" : newItemPropertiesArray[9],
-      "EOLDate" : newItemPropertiesArray[10],
-    });
+  function saveNewItemToCorrespondingDatabase(postKey, tableReference, parentItemId) {
+    console.log(parentItemId)
+    if (parentItemId){
+      ref  = firebase.database().ref(tableReference).child(parentItemId).child('components');
+      console.log('Im running');
+      ref.set({
+        [postKey] : true
+      });
+      ref  = firebase.database().ref(tableReference).child(parentItemId).child('components');
+      console.log('Im running');
+      ref.set({
+        [postKey] : true
+      });
+
+        ref = firebase.database().ref(newItemPropertiesArray[6]).child(postKey);
+
+        ref.set({
+        "assignedTo" : newItemPropertiesArray[0],
+        "vendor" : newItemPropertiesArray[1],
+        "model" : newItemPropertiesArray[2],
+        "quantity" : newItemPropertiesArray[3],
+        "description" : newItemPropertiesArray[4],
+        "serialNumber" : newItemPropertiesArray[5],
+        "category" : newItemPropertiesArray[6],
+        "subCategory" : newItemPropertiesArray[7],
+        "purchaseDate" : newItemPropertiesArray[8],
+        "assignmentDate" : newItemPropertiesArray[9],
+        "EOLDate" : newItemPropertiesArray[10],
+        "isComponent" : true
+      });
+    } else {
+       ref = firebase.database().ref(tableReference).child(postKey);
+
+        ref.set({
+        "assignedTo" : newItemPropertiesArray[0],
+        "vendor" : newItemPropertiesArray[1],
+        "model" : newItemPropertiesArray[2],
+        "quantity" : newItemPropertiesArray[3],
+        "description" : newItemPropertiesArray[4],
+        "serialNumber" : newItemPropertiesArray[5],
+        "category" : newItemPropertiesArray[6],
+        "subCategory" : newItemPropertiesArray[7],
+        "purchaseDate" : newItemPropertiesArray[8],
+        "assignmentDate" : newItemPropertiesArray[9],
+        "EOLDate" : newItemPropertiesArray[10],
+        "isComponent" : false
+      });
+    }
+    
     //Creates a new UID in the database and assigns to a variable so we can save to it
+  }
+
+  function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+      for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+
+          if (sParameterName[0] === sParam) {
+              return sParameterName[1] === undefined ? true : sParameterName[1];
+          }
+      }
   }
 
 

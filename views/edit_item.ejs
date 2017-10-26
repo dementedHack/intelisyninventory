@@ -32,7 +32,7 @@
   </div>
   <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-          <li class="active"><a href="Dashboard.html">Dashboard</a></li>
+          <li class="active"><a href="Dashboard.html">Home</a></li>
           <li><a href="#about">Marketplace</a></li>
           <li><a href="#contact">Contact</a></li>
       </ul>
@@ -65,6 +65,20 @@
     <div class="jumbotron">
       <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
       <h1>Item Information</span></h1>
+    </div>
+        <div class="row">
+
+     <div class="col-md-1"></div>
+      <div class="col-md-1"></div>
+      <button class="btn btn-primary col-md-1 editButton">
+      Edit
+     </button>
+     <button class="btn btn-primary col-md-1 saveButton">
+      Save
+     </button>
+
+     <div class="col-md-8"></div>
+    <!-- end of row-->
     </div>
     <form action="javascript:void(0);" class="form-horizontal" method="GET">
       <div class="form-group ">
@@ -278,15 +292,25 @@
       </div>
      </div>
     </form>
+    <div class="row"><div class="col-md-2"></div><div class="col-md-3">Add Component</div><div class="col-md-7"></div></div><div class="row"><div class="col-md-2"></div><i class="col-sm-1 fa fa-plus fa-5x input-group-addon" id="addComponentButton" style="border: 1px solid gray; padding : 7px 20px 7px 10px;"></i><div class="col-sm-10 col-sm-offset-2"><!-- end of row -->
+    <div class="row" id="computerSystemComponentsContainer">
+    
+    <!-- end of row -->
+    </div>
+    <div class="row">
 
-		<i class="col-sm-1 fa fa-plus fa-5x input-group-addon" style="border: 1px solid gray; padding : 10px 18px;"></i>
-	    <div class="col-sm-10 col-sm-offset-2">
-	    <button class="btn btn-primary" id="editButton">
+     <div class="col-md-1"></div>
+      <div class="col-md-1"></div>
+	    <button class="btn btn-primary col-md-1 editButton">
 	    Edit
 	   </button>
-	   <button class="btn btn-primary" id="saveButton">
-	    Submit
+	   <button class="btn btn-primary col-md-1 saveButton">
+	    Save
 	   </button>
+
+     <div class="col-md-8"></div>
+    <!-- end of row-->
+    </div>
 	   </div>
    </div>
   </div>
@@ -355,7 +379,7 @@
     if (UserInfo) {
         // User is signed in.
       self.currentUserUID = UserInfo.uid;
-      console.log(self.currentUserUID)
+      console.log(self.currentUserUID);
     } else {
         // No user is signed in. Redirect to login page
         console.log("No one is logged in")
@@ -368,16 +392,14 @@
       tempItem = snapshot.val();
       //console.log(tempItem);
     }).then(function(){
-      callback(tempItem);
+      callback(tempItem, getItemInformationFromComponentsListings);
     });
     
   };
 
   function assignDatabaseValuesToGlobalVariables(currentItem){
-  	  self.oldCategoryToCompareAgainst = itemCategoryFromURL;
-
-  	  self.category = $('#category').val();
-  	  self.vendor = $('#vendor').val();
+  	self.category = $('#category').val();
+  	self.vendor = $('#vendor').val();
 	  self.model = $('#model').val();
 	  self.quantity = $('#quantity').val();
 	  self.description = $('#description').val();
@@ -391,11 +413,14 @@
   }
 
   function compareCategoryValuesToDetermineIfThereNeedsToBeATableChange(){
-  	console.log(oldCategoryToCompareAgainst);
+  	console.log(itemCategoryFromURL);
   	console.log(category)
-  	if (self.oldCategoryToCompareAgainst !== self.category){
-  		console.log('Different Cateogy!');
-	  		ref = firebase.database().ref(itemCategoryFromURL).child(itemId).remove();
+  	if (self.itemCategoryFromURL !== self.category){
+  		console.log('Different Category!');
+      console.log(category)
+	  	ref = firebase.database().ref(itemCategoryFromURL).child(itemId).remove().then({
+
+      });
 		  	ref = firebase.database().ref(category);
 		    newPostKey = ref.push().key;
 		    ref.child(newPostKey).set({
@@ -410,9 +435,12 @@
 	    	"subCategory" : subCategory,
 	    	"vendor" : vendor,
 	    	"assignmentDate" : assignmentDate
-    	})
+
+        // Now we just need to make it so that the user's components table removes the currentId and adds the new one
+    	}).then(function(){
+        document.location.href = '/assets#itemAdded';
+      })
   	}
-  	document.location.href = '/assets#itemAdded';
   }
 
   function addDatabaseInfoToHTMLOnPage(currentItem){
@@ -462,14 +490,19 @@
               return sParameterName[1] === undefined ? true : sParameterName[1];
           }
       }
-  };
+  }
 
-  $('#editButton').click(function(){
-    toggleDivInput('#', 'saveButton');
+  $('.editButton').click(function(){
+    toggleDivInput('.', 'saveButton');
     toggleDivInput('.', 'form-horizontal :input');
   });
 
-  $('#saveButton').click(function(){
+  $(document).on('click', '#addComponentButton',function(){
+    console.log('clicked me');
+    window.location.href = "/add_item?parentId=" + itemId;
+  });
+
+  $('.saveButton').click(function(){
   	assignDatabaseValuesToGlobalVariables();
     ref = firebase.database().ref(itemCategoryFromURL).child(itemId).update({
     	"quantity" : parseInt(quantity),
@@ -487,17 +520,135 @@
     compareCategoryValuesToDetermineIfThereNeedsToBeATableChange();
   });
 
+  function appendComponentDivIfItemIsComputerSystem(componentsArr, callback){
+    var htmlToAppend =  '</div></div><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr></thead><tbody>';
+    if (itemCategoryFromURL === "ComputerSystem"){
+      replaceHTMLinDiv("#", "computerSystemComponentsContainer", htmlToAppend);
+    }
+    callback(componentsArr)
+  }
+
+  function appendDivToPage(selector, divId, newDivToAppend) {
+    $(selector + divId).append(newDivToAppend);
+  }
+
   function toggleDivInput(selector, elementToChange){
     $(selector + elementToChange).prop('disabled', function(i, v) { return !v; });
   }
 
+  function checkForComputerSystemComponents(callback){
+    var tempArr = [];
+    if (itemCategoryFromURL === "ComputerSystem") {
+      ref = firebase.database().ref(itemCategoryFromURL).child(itemId).child("components").once("value", function(snapshot){
+        tempArr = snapshotToArray(snapshot);
+        //console.log(tempArr)
+        callback(tempArr, getItemInformationFromComponentsListings)
+      })
+    }
+  }
+
+    // Convert the snapshot we receive from the DB into an array by pushing each snapshot child into the global array.
+  function snapshotToArray(snapshot){
+    var returnArr = [];
+    var newArray = {};
+
+    snapshot.forEach(function(childSnapshot) {
+        var item = childSnapshot.key;
+        //item.key = childSnapshot.key;
+        console.log(item)
+        returnArr.push(item);
+    });
+    console.log(returnArr)
+    return returnArr;
+  }
+
+  function getComponentsListingsFromDB(arrayToLookUp, callback){
+    console.log(arrayToLookUp)
+    var tempArr = [];
+      for(var i =0; i < arrayToLookUp.length; i++){
+        ref = firebase.database().ref("ComputerSystem").child(itemId).child("components").child(arrayToLookUp[i]).once("value", function(snapshot){
+            tempArr.push(snapshot.key);
+        });
+      }
+      callback(tempArr, loadTableItemsFromDBIntoHTML);
+  }
+
+  function getItemInformationFromComponentsListings(arrayToLookUp, callback){
+    var tempArr = [];
+    var tableAndCategoryName;
+    for(var i = 0; i < arrayToLookUp.length; i++){
+      var itemToLookup = arrayToLookUp[i];
+      //console.log(arrayToLookUp[i])
+      ref = firebase.database().ref("ComputerSystem").child(arrayToLookUp[i]).once("value", function(snapshot){
+        if (snapshot.val()){
+          tempArr.push(snapshot.val());
+          tableAndCategoryName = "ComputerSystem"
+          //console.log(snapshot.val())
+        }
+      }).then(function(){
+        ref = firebase.database().ref("Hardware").child(itemToLookup).once("value", function(snapshot){
+          if (snapshot.val()){
+            tempArr.push(snapshot.val());
+            tableAndCategoryName = "Hardware"
+            //console.log(snapshot.val())
+          }
+        }).then(function(){
+          ref = firebase.database().ref("Software").child(itemToLookup).once("value", function(snapshot){
+            if (snapshot.val()){
+              tempArr.push(snapshot.val());
+              tableAndCategoryName = "Software";
+              //console.log(snapshot.val())
+            }
+          }).then(function(){
+            callback(tempArr, itemToLookup, tableAndCategoryName)
+          })
+        })
+      });
+    }
+  }
+
+  function loadTableItemsFromDBIntoHTML(tableItems, id, tableAndCategoryName){
+    console.log(tableItems)
+    var htmlToAppend = '<div class="row"><div class="col-md-2"></div><div class="col-md-3">Add Component</div><div class="col-md-7"></div></div><div class="row"><div class="col-md-2"></div><i class="col-sm-1 fa fa-plus fa-5x input-group-addon" id="addComponentButton" style="border: 1px solid gray; padding : 7px 20px 7px 10px;"></i><div class="col-sm-10 col-sm-offset-2"><!-- end of row --></div></div><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr>';
+    for (var i = 0; i < tableItems.length; i++){
+      htmlToAppend += '<tr id=' + id + ' class="' + tableAndCategoryName + ' expiredCell"><td>' + tableItems[i].assignedTo + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].vendor + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].model + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].description + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].quantity + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].serialNumber + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].subCategory + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].purchaseDate + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].assignmentDate + '</td>';
+      htmlToAppend += '<td>' + tableItems[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + tableItems[i] + '""></i></td>';
+      htmlToAppend += '</tr>';
+    }
+    htmlToAppend += '</thead><tbody>';
+    if (itemCategoryFromURL === "ComputerSystem"){
+      replaceHTMLinDiv("#", "computerSystemComponentsContainer", htmlToAppend);
+    }
+  }
+
+  $(document).on("click", "tr", function(){
+    var cellId = ($(this).attr('id'));
+    // Grabs the div's classes and parses the values to get the category name from it
+    var category = ($(this).attr('class').split(" ")[0])
+    window.location.href = "/edit_item?id=" + cellId + "&category=" + category + "&parentId" + itemId;
+  });
+
   $( document ).ready(function() {
-    itemId = getUrlParameter('id');
-    itemCategoryFromURL = getUrlParameter('category');
-    grabItemInformationFromDatabase(itemId, itemCategoryFromURL, addDatabaseInfoToHTMLOnPage)
-    //addDatabaseInfoToHTMLOnPage();
+    
+      itemId = getUrlParameter('id');
+      itemCategoryFromURL = getUrlParameter('category');
+    if (itemId){
+      grabItemInformationFromDatabase(itemId, itemCategoryFromURL, addDatabaseInfoToHTMLOnPage)
+      checkForComputerSystemComponents(getComponentsListingsFromDB);
+    } else {
+      itemId = getUrlParameter('parentId');
+    }
+    
     toggleDivInput('.', 'form-horizontal :input');
-    toggleDivInput('#', 'saveButton');
+    toggleDivInput('.', 'saveButton');
   });
 
 </script>

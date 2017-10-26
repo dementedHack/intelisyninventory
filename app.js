@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var asset_addition = require('./routes/asset_addition');
+var add_item = require('./routes/add_item');
 var edit_item = require('./routes/edit_item');
 var assets = require('./routes/assets');
 
@@ -32,7 +32,7 @@ app.get('/kai/:id', function(req, res){
 
 app.use('/', index);
 app.use('/users', users);
-app.use('/asset_addition', asset_addition);
+app.use('/add_item', add_item);
 app.use('/edit_item', edit_item);
 app.use('/assets', assets);
 

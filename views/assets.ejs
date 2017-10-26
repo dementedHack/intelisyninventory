@@ -304,13 +304,15 @@
     var adToRemove = $(event.target).context.dataset.id;
     var r = confirm("You are about to delete an item!\nClick OK to continue operation or Cancel to dismiss.\n");
       if (r == true) {
-        console.log(adToRemove);
-        var tableToRemoveItemFrom = (this.parentNode.parentNode.getAttribute("class"));
-        $("#" + adToRemove).remove();
-        console.log(tableToRemoveItemFrom);
-        ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).remove();
-        };
-
+          console.log(adToRemove);
+          var tableToRemoveItemFrom = (this.parentNode.parentNode.getAttribute("class"));
+          $("#" + adToRemove).remove();
+          console.log(tableToRemoveItemFrom);
+          ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).remove();
+          return false;
+      } else {
+        return false;
+      }
       var indexToRemove = this.id;
   });
 

@@ -27,7 +27,7 @@ firebase.auth().onAuthStateChanged(function(user) {
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('asset_addition', { title: 'Express' });
+  res.render('add_item', { title: 'Express' });
 });
 
 module.exports = router;
