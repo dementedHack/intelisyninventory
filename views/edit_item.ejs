@@ -64,7 +64,7 @@
    <div class="col-md-6 col-sm-6 col-sm-10">
     <div class="jumbotron">
       <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
-      <h1>Edit Item</span></h1>
+      <h1>Item Information</span></h1>
     </div>
     <form action="javascript:void(0);" class="form-horizontal" method="GET">
       <div class="form-group ">
@@ -219,7 +219,7 @@
           <option value="Monitor">Monitor</option>
           <option value="CPU">CPU</option>
           <option value="Laptop">Laptop</option>
-          <option value="Desktop">Laptop</option>
+          <option value="Desktop">Desktop</option>
         </select>
        </div>
       </div>
@@ -275,12 +275,19 @@
      <div class="form-group">
       <div class="col-sm-10 col-sm-offset-2">
        <input name="_honey" style="display:none" type="text">
-       <button class="btn btn-primary" id="submitButton">
-        Submit
-       </button>
       </div>
      </div>
     </form>
+
+		<i class="col-sm-1 fa fa-plus fa-5x input-group-addon" style="border: 1px solid gray; padding : 10px 18px;"></i>
+	    <div class="col-sm-10 col-sm-offset-2">
+	    <button class="btn btn-primary" id="editButton">
+	    Edit
+	   </button>
+	   <button class="btn btn-primary" id="saveButton">
+	    Submit
+	   </button>
+	   </div>
    </div>
   </div>
  </div>
@@ -311,8 +318,21 @@
 <script>
 
   var ref;
-  var itemCategory;
+  var itemCategoryFromURLFromURL;
   var itemId;
+  var vendor;
+  var model;
+  var quantity;
+  var description;
+  var assignmentDate;
+  var EOLDate = "";
+  var purchaseDate;
+  var serialNumber;
+  var assignedTo;
+  var subCategory;
+  var assignmentDate;
+  var category;
+  var oldCategoryToCompareAgainst;
 
   // These are the arrays we insert data from the DB into. They will contain snapshot objects
   var retrievedComputerSystemArray = [];
@@ -346,12 +366,54 @@
     var tempItem;
     ref = firebase.database().ref(tableToQuery).child(id).once("value", function(snapshot){
       tempItem = snapshot.val();
-      console.log(tempItem)
+      //console.log(tempItem);
     }).then(function(){
-      callback(tempItem)
+      callback(tempItem);
     });
     
   };
+
+  function assignDatabaseValuesToGlobalVariables(currentItem){
+  	  self.oldCategoryToCompareAgainst = itemCategoryFromURL;
+
+  	  self.category = $('#category').val();
+  	  self.vendor = $('#vendor').val();
+	  self.model = $('#model').val();
+	  self.quantity = $('#quantity').val();
+	  self.description = $('#description').val();
+	  self.assignmentDate = $('#assignmentDate').val();
+	  self.EOLDate = $('#EOLDate').val();
+	  self.purchaseDate = $('#purchaseDate').val();
+	  self.serialNumber = $('#serialNumber').val();
+	  self.assignedTo = $('#assignedTo').val();
+	  self.subCategory = $('#subCategory').val();
+	  self.assignmentDate = $('#assignmentDate').val();
+  }
+
+  function compareCategoryValuesToDetermineIfThereNeedsToBeATableChange(){
+  	console.log(oldCategoryToCompareAgainst);
+  	console.log(category)
+  	if (self.oldCategoryToCompareAgainst !== self.category){
+  		console.log('Different Cateogy!');
+	  		ref = firebase.database().ref(itemCategoryFromURL).child(itemId).remove();
+		  	ref = firebase.database().ref(category);
+		    newPostKey = ref.push().key;
+		    ref.child(newPostKey).set({
+		    "quantity" : parseInt(quantity),
+	    	"EOLDate" : EOLDate,
+	    	"assignedTo" : assignedTo,
+	    	"category" : category,
+	    	"description" : description,
+	    	"model" : model,
+	    	"purchaseDate" : purchaseDate,
+	    	"serialNumber" : serialNumber,
+	    	"subCategory" : subCategory,
+	    	"vendor" : vendor,
+	    	"assignmentDate" : assignmentDate
+    	})
+  	}
+  	document.location.href = '/assets#itemAdded';
+  }
 
   function addDatabaseInfoToHTMLOnPage(currentItem){
     // We need to se if the category is ComputerSystem. The string is not formatted to populate the select box correctly
@@ -375,38 +437,6 @@
     $('#assignmentDate').val(currentItem.assignmentDate);
     $('#EOLDate').val(currentItem.EOLDate);
     //$('#subCategory option:contains("' + currentItem.subCategory + '")').prop('selected','selected');
-  }
-
-
-// THis switch statement is messed up. Want each of the arrays to have the corresponding UIDs in them
-  function grabAllDataOnceFromDatabase(tableToQuery, array, callback){
-    //console.log(tableToQuery)
-    var keysArr;
-
-    ref = firebase.database().ref(tableToQuery).once("value", function(snapshot){
-      switch(tableToQuery) {
-          case "ComputerSystem":
-              array = snapshotToArray(snapshot, retrievedComputerSystemKeyArray);
-              keysArr = self.retrievedComputerSystemKeyArray
-              break;
-          case "Hardware":
-              array = snapshotToArray(snapshot, retrievedHardwareArray);
-              keysArr = self.retrievedHardwareKeyArray;
-              break;
-          case "Software":
-              array = snapshotToArray(snapshot, retrievedSoftwareArray);
-              keysArr = self.retrievedSoftwareKeyArray;
-              break;    
-          default:
-              console.log("default case")
-      }
-      //array = snapshotToArray(snapshot, "retrieved" + tableToQuery + "KeyArray");
-
-    }).then(function(){
-      //console.log(array)
-      //callback is createCellFromArrayInfo
-     
-    });
   }
     
   function convertDateToJavaScriptDateFormat(originalDate){
@@ -434,22 +464,40 @@
       }
   };
 
-  //Toggling the disabled
-  //$('.form-horizontal :input').prop('disabled', function(i, v) { return !v; });
+  $('#editButton').click(function(){
+    toggleDivInput('#', 'saveButton');
+    toggleDivInput('.', 'form-horizontal :input');
+  });
 
-  function toggleFormInput(){
-    $('.form-horizontal :input').prop('disabled', function(i, v) { return !v; });
+  $('#saveButton').click(function(){
+  	assignDatabaseValuesToGlobalVariables();
+    ref = firebase.database().ref(itemCategoryFromURL).child(itemId).update({
+    	"quantity" : parseInt(quantity),
+    	"EOLDate" : EOLDate,
+    	"assignedTo" : assignedTo,
+    	"category" : category,
+    	"description" : description,
+    	"model" : model,
+    	"purchaseDate" : purchaseDate,
+    	"serialNumber" : serialNumber,
+    	"subCategory" : subCategory,
+    	"vendor" : vendor,
+    	"assignmentDate" : assignmentDate
+    });
+    compareCategoryValuesToDetermineIfThereNeedsToBeATableChange();
+  });
+
+  function toggleDivInput(selector, elementToChange){
+    $(selector + elementToChange).prop('disabled', function(i, v) { return !v; });
   }
 
   $( document ).ready(function() {
     itemId = getUrlParameter('id');
-    itemCategory = getUrlParameter('category');
-    grabItemInformationFromDatabase(itemId, itemCategory, addDatabaseInfoToHTMLOnPage)
+    itemCategoryFromURL = getUrlParameter('category');
+    grabItemInformationFromDatabase(itemId, itemCategoryFromURL, addDatabaseInfoToHTMLOnPage)
     //addDatabaseInfoToHTMLOnPage();
-    toggleFormInput();
-
-
-
+    toggleDivInput('.', 'form-horizontal :input');
+    toggleDivInput('#', 'saveButton');
   });
 
 </script>
