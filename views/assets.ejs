@@ -226,35 +226,11 @@
   }
 
   function createCellFromArrayInfo(originalArray, category, callback, keysArr){
-
-
     var tempArray = [];
     var htmlToAppendToArray = '<h2>' + category + '</h2><hr><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr></thead><tbody>';
 
     for(var i =0; i < originalArray.length; i++){
-
-      //convertDateToInt(originalArray[i].EOLDate);
-      var convertedPurchaseDateAsInt = convertDateToJavaScriptDateFormat(originalArray[i].purchaseDate);
-      var convertedEOLDateAsInt = convertDateToJavaScriptDateFormat(originalArray[i].EOLDate);
-      console.log(convertedPurchaseDateAsInt);
-      console.log(convertedEOLDateAsInt);
-
-      // This logic determines whether an item has expired 
-      if (convertedEOLDateAsInt < convertedPurchaseDateAsInt) {
-        console.log("This item is expired")
-        htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + ' expiredCell"><td>' + originalArray[i].assignedTo + '</td>';
-      } else if ((convertedEOLDateAsInt.getMonth() - convertedPurchaseDateAsInt.getMonth()) <= 2 ) {
-        console.log("item is expiring soon");
-        htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + ' expiringCell"><td>' + originalArray[i].assignedTo + '</td>';
-      } else {
-         htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + '"><td>' + originalArray[i].assignedTo + '</td>';
-      }
-      //console.log(convertedEOLDateAsInt.getMonth())
-
-      // console.log("EOL: " + EOLAsInt + " Purchased: " + purchaseDateAsInt)
-      // console.log(EOLAsInt - purchaseDateAsInt)
-
-      //htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class=' + category + '><td>' + originalArray[i].assignedTo + '</td>';
+      htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class=' + category + '><td>' + originalArray[i].assignedTo + '</td>';
       htmlToAppendToArray += '<td>' + originalArray[i].vendor + '</td>';
       htmlToAppendToArray += '<td>' + originalArray[i].model + '</td>';
       htmlToAppendToArray += '<td>' + originalArray[i].description + '</td>';
@@ -273,20 +249,6 @@
       category = "ComputerSystem"
     }
     replaceHTMLinDiv("#", category, htmlToAppendToArray);
-    colorCells()
-  }
-
-  function colorCells(){
-    $(".expiredCell").attr("style", "background-color : #F08080");
-    $(".expiringCell").attr("style", "background-color : #EEE8AA");
-  }
-
-  function convertDateToJavaScriptDateFormat(originalDate){
-    // var dateAsIntegerArray = originalDate.split("/");
-    // var dateAsString = dateAsIntegerArray.join("");
-    // return parseInt(dateAsString);
-    var newDate = new Date(originalDate);
-    return newDate;
   }
   
   function replaceHTMLinDiv(selector, divToReplace, newHTMLToAppendToDiv) {
@@ -307,21 +269,13 @@
         };
 
       var indexToRemove = this.id;
-  });
-
-    // Handle the user clicking a cell. When clicked, we want to route to a new page that will allow the user to modify the data in the cell
-
-    // Route to new page while sending the id 
-  $(document).on("click", "tr", function(){
-    var cellId = ($(this).parent().context.id);
-    // Grabs the div's classes and parses the values to get the category name from it
-    var category = ($(this).attr('class').split(" ")[0])
-    window.location.href = "/edit_item?id=" + cellId + "&category=" + category;
-  });
-
-
-
-  $( document ).ready(function() {
+      //console.log(indexToRemove)
+      //self.usersAdList.splice(indexToRemove, 1);
+      //replaceHTMLinPage("UserAdCellContainer", "");
+      //createAdCell();
+      // } else {
+      //     // What do we do if the user clicks cancel? Probably nothing
+      // }
   });
 
 </script>

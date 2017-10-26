@@ -8,7 +8,6 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var asset_addition = require('./routes/asset_addition');
-var edit_item = require('./routes/edit_item');
 var assets = require('./routes/assets');
 
 var app = express();
@@ -25,15 +24,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/kai/:id', function(req, res){
-	console.log('Hi')
-	res.send(req.params);
-})
-
 app.use('/', index);
 app.use('/users', users);
 app.use('/asset_addition', asset_addition);
-app.use('/edit_item', edit_item);
 app.use('/assets', assets);
 
 // catch 404 and forward to error handler
