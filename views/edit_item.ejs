@@ -1,0 +1,456 @@
+<html lang="en"><head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>Assets</title>
+
+</head>
+<body>
+
+
+<!--formden.js communicates with FormDen server to validate fields and submit via AJAX -->
+<script type="text/javascript" src="https://formden.com/static/cdn/formden.js"></script>
+
+<!-- Special version of Bootstrap that is isolated to content wrapped in .bootstrap-iso -->
+<link rel="stylesheet" href="https://formden.com/static/cdn/bootstrap-iso.css">
+
+<!--Font Awesome (added because you use icons in your prepend/append)-->
+<link rel="stylesheet" href="https://formden.com/static/cdn/font-awesome/4.4.0/css/font-awesome.min.css">
+
+<!-- Inline CSS based on choices in "Settings" tab -->
+<style>.bootstrap-iso .formden_header h2, .bootstrap-iso .formden_header p, .bootstrap-iso form{font-family: Arial, Helvetica, sans-serif; color: black}.bootstrap-iso form button, .bootstrap-iso form button:hover{color: white !important;} .asteriskField{color: red;}</style>
+
+<!-- HTML Form (wrapped in a .bootstrap-iso div) -->
+<div class="bootstrap-iso">
+ <div class="container-fluid">
+  <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="Login.html">Intelisyn Asset Management</a>
+  </div>
+  <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+          <li class="active"><a href="Dashboard.html">Dashboard</a></li>
+          <li><a href="#about">Marketplace</a></li>
+          <li><a href="#contact">Contact</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a id="logoutButton" href="">Logout</a></li>
+      </ul>
+  </div>
+  <!-- /.nav-collapse -->
+  <div class="row row-offcanvas row-offcanvas-left">
+        <div id="sidebarMenu">
+            <div class="col-xs-6 col-sm-2 sidebar-offcanvas" id="sidebar" role="navigation" >
+          <div class="sidebar-nav">
+              <ul class="nav" style="margin-top: 10px;">
+                  <li><a href="dashboard.html">Dashboard</a></li>
+                  <li class="active"><a href="Assetts.html">Assetts</a></li>
+                  <li class="nav-divider"></li>
+                  <li><a href="Auction_Real_Estate.html">Auction Real Estate</a></li>
+                  <li><a href="#">My Sales</a></li>
+                  <li><a href="#">Create Ad</a></li>
+                  <li class="nav-divider"></li>
+                  <li><a href="#">Billing Info</a></li>
+                  <li><a href="#">Account Settings</a></li>
+                  <li><a href="#">Help</a></li>
+              </ul>
+          </div>
+          <!--/.well -->
+      </div>
+  <div class="row">
+   <div class="col-md-6 col-sm-6 col-sm-10">
+    <div class="jumbotron">
+      <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
+      <h1>Edit Item</span></h1>
+    </div>
+    <form action="javascript:void(0);" class="form-horizontal" method="GET">
+      <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField" for="date">
+       Assigned To
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-user">
+         </i>
+        </div>
+        <select name="assignedTo" class="form-control" id="assignedTo">
+          <option value="Inventory">Inventory</option>
+          <option value="Karen G.">Karen G.</option>
+          <option value="Chelsea S.">Chelsea S.</option>
+          <option value="Loren L.">Loren L.</option>
+          <option value="Chris P.">Chris P.</option>
+          <option value="Marc S.">Marc S.</option>
+          <option value="Kai P.">Kai P.</option>
+          <option value="Mikel W.">Mikel W.</option>
+          <option value="Cheryl S.">Cheryl S.</option>
+          <option value="Shawna W.">Shawna W.</option>
+          <option value="Sara W.">Sara W.</option>
+          <option value="Cole T.">Cole T.</option>
+        </select>
+       </div>
+      </div>
+     </div>
+     <div class="form-group">
+      <label class="control-label col-sm-2 requiredField">
+       Vendor
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-calendar">
+         </i>
+        </div>
+        <input class="form-control" id="vendor" name="vendor" placeholder="" type="text">
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField">
+       Model
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-calendar">
+         </i>
+        </div>
+        <input class="form-control" id="model" name="model" type="text" placeholder="">
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField">
+       Quantity
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-calendar">
+         </i>
+        </div>
+         <input class="form-control" type="number" value="1" id="quantity" name="quantity" min="0">
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField">
+       Description
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-comment">
+         </i>
+        </div>
+        <textarea class="form-control" col="32" rows ="4" name="description" id="description" style="resize: none"></textarea>
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField">
+       Serial Number
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-tags" aria-hidden="true"></i>
+        </div>
+        <input class="form-control" id="serialNumber" type="text" name="serialNumber" placeholder="">
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField" for="date">
+       Category
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-flag">
+         </i>
+        </div>
+        <select name="category" id="category" name="category" class="form-control">
+          <option value=""></option>
+          <option value="Hardware">Hardware</option>
+          <option value="Software">Software</option>
+          <option value="ComputerSystem">Computer System</option>
+        </select>
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField" for="date">
+       Sub-category
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-flag">
+         </i>
+        </div>
+        <select name="subCategory" id="subCategory" class="form-control">
+          <option value=""></option>
+          <option value="HDD/SSD">HDD/SSD</option>
+          <option value="Monitor">Monitor</option>
+          <option value="CPU">CPU</option>
+          <option value="Laptop">Laptop</option>
+          <option value="Desktop">Laptop</option>
+        </select>
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField" for="date">
+       Purchase Date
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-calendar">
+         </i>
+        </div>
+        <input class="form-control datePicker" id="purchaseDate" name="purchaseDate" placeholder="" type="text">
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField" for="date">
+       Assignment Date
+       <span class="asteriskField">
+        *
+       </span>
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-calendar">
+         </i>
+        </div>
+        <input class="form-control datePicker" id="assignmentDate" name="assignmentDate" placeholder="" type="text">
+       </div>
+      </div>
+     </div>
+     <div class="form-group ">
+      <label class="control-label col-sm-2 requiredField" for="date">
+       End of Life Date
+      </label>
+      <div class="col-sm-10">
+       <div class="input-group">
+        <div class="input-group-addon">
+         <i class="fa fa-calendar">
+         </i>
+        </div>
+        <input class="form-control datePicker" id="EOLDate" name="EOLDate" placeholder="" type="text">
+       </div>
+      </div>
+     </div>
+     <div class="form-group">
+      <div class="col-sm-10 col-sm-offset-2">
+       <input name="_honey" style="display:none" type="text">
+       <button class="btn btn-primary" id="submitButton">
+        Submit
+       </button>
+      </div>
+     </div>
+    </form>
+   </div>
+  </div>
+ </div>
+</div>
+</body>
+<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAqVtjnVwoi5HhyWnsW7qLNSwPGYaZ-2TA",
+    authDomain: "intelisynassetmanagement.firebaseapp.com",
+    databaseURL: "https://intelisynassetmanagement.firebaseio.com",
+    projectId: "intelisynassetmanagement",
+    storageBucket: "intelisynassetmanagement.appspot.com",
+    messagingSenderId: "241325053027"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<!-- Extra JavaScript/CSS added manually in "Settings" tab -->
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.js" integrity="sha256-tA8y0XqiwnpwmOIl3SGAcFl2RvxHjA8qp0+1uCGmRmg=" crossorigin="anonymous"></script>
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css">
+
+<script>
+
+  var ref;
+  var itemCategory;
+  var itemId;
+
+  // These are the arrays we insert data from the DB into. They will contain snapshot objects
+  var retrievedComputerSystemArray = [];
+  var retrievedSoftwareArray = [];
+  var retrievedHardwareArray = [];
+
+  // These are the arrays we insert data from the DB into. They will contain snapshot objects
+  var retrievedComputerSystemKeyArray = [];
+  var retrievedSoftwareKeyArray = [];
+  var retrievedHardwareKeyArray = [];
+
+  // These are the arrays we place the cell html code into. Each item will be a string of html.
+  var computerSystemHTMLArray = [];
+  var softwareHTMLArray = [];
+  var hardwareHTMLArray = [];
+
+    // Get current logged in user info
+  firebase.auth().onAuthStateChanged(function(UserInfo) {
+    //grabAssetData(createCellFromArrayInfo);
+    if (UserInfo) {
+        // User is signed in.
+      self.currentUserUID = UserInfo.uid;
+      console.log(self.currentUserUID)
+    } else {
+        // No user is signed in. Redirect to login page
+        console.log("No one is logged in")
+    }
+  });
+  
+  function grabItemInformationFromDatabase(id, tableToQuery, callback){
+    var tempItem;
+    ref = firebase.database().ref(tableToQuery).child(id).once("value", function(snapshot){
+      tempItem = snapshot.val();
+      console.log(tempItem)
+    }).then(function(){
+      callback(tempItem)
+    });
+    
+  };
+
+  function addDatabaseInfoToHTMLOnPage(currentItem){
+    // We need to se if the category is ComputerSystem. The string is not formatted to populate the select box correctly
+    var categoryString;
+    if (currentItem.category === "ComputerSystem"){
+       categoryString = "Computer"; 
+    } else {
+      categoryString = currentItem.category;
+    }
+    // Changes the select inputs to the corresponding values
+    $('#assignedTo option:contains("' + currentItem.assignedTo + '")').prop('selected','selected');
+    $('#category option:contains("' + categoryString + '")').prop('selected','selected');
+    $('#subCategory option:contains("' + currentItem.subCategory + '")').prop('selected','selected');
+
+    $('#vendor').val(currentItem.vendor);
+    $('#model').val(currentItem.model);
+    $('#quantity').val(currentItem.quantity);
+    $('#description').val(currentItem.description);
+    $('#serialNumber').val(currentItem.serialNumber);
+    $('#purchaseDate').val(currentItem.purchaseDate);
+    $('#assignmentDate').val(currentItem.assignmentDate);
+    $('#EOLDate').val(currentItem.EOLDate);
+    //$('#subCategory option:contains("' + currentItem.subCategory + '")').prop('selected','selected');
+  }
+
+
+// THis switch statement is messed up. Want each of the arrays to have the corresponding UIDs in them
+  function grabAllDataOnceFromDatabase(tableToQuery, array, callback){
+    //console.log(tableToQuery)
+    var keysArr;
+
+    ref = firebase.database().ref(tableToQuery).once("value", function(snapshot){
+      switch(tableToQuery) {
+          case "ComputerSystem":
+              array = snapshotToArray(snapshot, retrievedComputerSystemKeyArray);
+              keysArr = self.retrievedComputerSystemKeyArray
+              break;
+          case "Hardware":
+              array = snapshotToArray(snapshot, retrievedHardwareArray);
+              keysArr = self.retrievedHardwareKeyArray;
+              break;
+          case "Software":
+              array = snapshotToArray(snapshot, retrievedSoftwareArray);
+              keysArr = self.retrievedSoftwareKeyArray;
+              break;    
+          default:
+              console.log("default case")
+      }
+      //array = snapshotToArray(snapshot, "retrieved" + tableToQuery + "KeyArray");
+
+    }).then(function(){
+      //console.log(array)
+      //callback is createCellFromArrayInfo
+     
+    });
+  }
+    
+  function convertDateToJavaScriptDateFormat(originalDate){
+    var newDate = new Date(originalDate);
+    return newDate;
+  }
+  
+  function replaceHTMLinDiv(selector, divToReplace, newHTMLToAppendToDiv) {
+    //console.log(selector + divToReplace)
+    $(selector + divToReplace).html(newHTMLToAppendToDiv);
+  }
+
+  function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+      for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+
+          if (sParameterName[0] === sParam) {
+              return sParameterName[1] === undefined ? true : sParameterName[1];
+          }
+      }
+  };
+
+  //Toggling the disabled
+  //$('.form-horizontal :input').prop('disabled', function(i, v) { return !v; });
+
+  function toggleFormInput(){
+    $('.form-horizontal :input').prop('disabled', function(i, v) { return !v; });
+  }
+
+  $( document ).ready(function() {
+    itemId = getUrlParameter('id');
+    itemCategory = getUrlParameter('category');
+    grabItemInformationFromDatabase(itemId, itemCategory, addDatabaseInfoToHTMLOnPage)
+    //addDatabaseInfoToHTMLOnPage();
+    toggleFormInput();
+
+
+
+  });
+
+</script>
+</html>
