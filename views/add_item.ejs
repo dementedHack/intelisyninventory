@@ -373,12 +373,12 @@
     if (parentItemId){
       ref  = firebase.database().ref(tableReference).child(parentItemId).child('components');
       console.log('Im running');
-      ref.set({
+      ref.update({
         [postKey] : true
       });
       ref  = firebase.database().ref(tableReference).child(parentItemId).child('components');
       console.log('Im running');
-      ref.set({
+      ref.update({
         [postKey] : true
       });
 
