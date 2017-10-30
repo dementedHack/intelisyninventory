@@ -33,7 +33,7 @@
   <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
           <li class="active"><a href="Dashboard.html">Dashboard</a></li>
-          <li><a href="assets">Marketplace</a></li>
+          <li><a href="#about">Marketplace</a></li>
           <li><a href="#contact">Contact</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -47,7 +47,7 @@
           <div class="sidebar-nav">
               <ul class="nav" style="margin-top: 10px;">
                   <li><a href="dashboard.html">Dashboard</a></li>
-                  <li class="active"><a href="Assets">Empoyees</a></li>
+                  <li class="active"><a href="Assetts.html">Assetts</a></li>
                   <li class="nav-divider"></li>
                   <li><a href="employees">Edit Employees</a></li>
                   <li><a href="#">My Sales</a></li>
@@ -69,7 +69,7 @@
     <form action="javascript:void(0);" class="form-horizontal" method="GET">
       <div class="form-group ">
       <label class="control-label col-sm-2 requiredField" for="date">
-       Assigned To
+       Name
        <span class="asteriskField">
         *
        </span>
@@ -80,8 +80,7 @@
          <i class="fa fa-user">
          </i>
         </div>
-        <select name="assignedTo" class="form-control" id="assignedTo">
-        </select>
+        <input name="assignedTo" class="form-control" id="name" type="text">
        </div>
       </div>
      </div>
@@ -294,16 +293,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css">
 
 <script>
-
-  var employeesList = [];
-
     var subCategory = [["Peripheral", "Audio", "Telephony", "Networking", "Storage", "CPU", "Memory", "Printer","Toner"], ["Project Management", "O.S.", "Application Management"], ["Laptop", "Desktop"]] 
 
     var ref;
     var parentId;
     // Get current logged in user info
     firebase.auth().onAuthStateChanged(function(UserInfo) {
-      grabEmployeesListFromDB();
     if (UserInfo) {
         // User is signed in.
       self.currentUserUID = UserInfo.uid;
@@ -353,21 +348,11 @@
       newPostKey = ref.push().key;
       console.log(parentItemId)
       saveNewItemToCorrespondingDatabase(newPostKey, 'ComputerSystem', parentItemId);
-
     } else { 
       ref = firebase.database().ref("Asset");
       newPostKey = ref.push().key;
       saveNewItemToCorrespondingDatabase(newPostKey, newItemPropertiesArray[6], null);
-      saveNewItemToEmployeeDatabase(newPostKey, employeesList[1].key,"Employee")
     }
-  }
-
-  function saveNewItemToEmployeeTable(){
-    var employeeRef = $('#assignedTo').val();
-    ref = firebase.database().ref("Employee").child(employeeRef).set({
-
-    });
-
   }
 
   function saveNewItemToCorrespondingDatabase(postKey, tableReference, parentItemId) {
@@ -423,67 +408,6 @@
     //Creates a new UID in the database and assigns to a variable so we can save to it
   }
 
-  function saveNewItemToEmployeeDatabase(postKey, employeeId, tableReference) {
-   ref = firebase.database().ref(tableReference).child(employeeId).child("items").child(postKey);
-    ref.set({
-      "assignedTo" : newItemPropertiesArray[0],
-      "vendor" : newItemPropertiesArray[1],
-      "model" : newItemPropertiesArray[2],
-      "quantity" : newItemPropertiesArray[3],
-      "description" : newItemPropertiesArray[4],
-      "serialNumber" : newItemPropertiesArray[5],
-      "category" : newItemPropertiesArray[6],
-      "subCategory" : newItemPropertiesArray[7],
-      "purchaseDate" : newItemPropertiesArray[8],
-      "assignmentDate" : newItemPropertiesArray[9],
-      "EOLDate" : newItemPropertiesArray[10],
-      "isComponent" : false
-      });
-  }
-    
-    function wait(ms) {
-      return new Promise(r => setTimeout(r, ms));
-    }
-
-  async function grabEmployeesListFromDB(){
-    var newArray;
-     ref = firebase.database().ref("Employee").once("value", function(snapshot){
-        self.employeesList = snapshotToArray(snapshot)
-     }).then(function(){
-      console.log(employeesList)
-      var newHTML = '<select name="assignedTo" class="form-control" id="assignedTo">';
-      for(var i =0; i < employeesList.length; i++){
-        newHTML+= '<option value=' + employeesList[i].name + '>' + employeesList[i].name + '</option>'
-          
-      }
-      newHTML += '</select></div>';
-      console.log(newHTML)
-      replaceHTMLinDiv("#", "assignedTo", newHTML);
-     })
-
-  }
-
-
-  function snapshotToArray(snapshot){
-    var returnArr = [];
-    var newArray = {};
-
-    snapshot.forEach(function(childSnapshot) {
-        var item = childSnapshot.val();
-        item.key = childSnapshot.key;
-        console.log(item)
-        returnArr.push(item);
-    });
-    console.log(returnArr)
-    return returnArr;
-  }
-
-  function replaceHTMLinDiv(selector, divToReplace, newHTMLToAppendToDiv) {
-    //console.log(selector + divToReplace)
-    $(selector + divToReplace).html(newHTMLToAppendToDiv);
-  }
-
-
   function getUrlParameter(sParam) {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
         sURLVariables = sPageURL.split('&'),
@@ -498,8 +422,6 @@
           }
       }
   }
-
-
 
 
 </script>

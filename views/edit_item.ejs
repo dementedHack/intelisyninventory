@@ -46,7 +46,7 @@
             <div class="col-xs-6 col-sm-2 sidebar-offcanvas" id="sidebar" role="navigation" >
           <div class="sidebar-nav">
               <ul class="nav" style="margin-top: 10px;">
-                  <li><a href="dashboard.html">Dashboard</a></li>
+                  <li><a href="Assets">Dashboard</a></li>
                   <li class="active"><a href="Assetts.html">Assetts</a></li>
                   <li class="nav-divider"></li>
                   <li><a href="Auction_Real_Estate.html">Auction Real Estate</a></li>
@@ -414,26 +414,19 @@
 	  self.assignmentDate = $('#assignmentDate').val();
   }
 
-  function compareCategoryValuesToDetermineIfThereNeedsToBeATableChange(){
+  async function compareCategoryValuesToDetermineIfThereNeedsToBeATableChange(){
   	console.log("Original item category: " + itemCategoryFromURL);
     console.log("parent id " + parentIdFromURL)
   	console.log("new category to save to " + category)
     console.log("itemId " + itemIdFromURL)
   	if (self.itemCategoryFromURL !== self.category){
-  		console.log('Different Category!');
-      console.log(category)
-	  	// ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).remove().then(function(){
-    //     ref = firebase.database("ComputerSystem").ref(parentIdFromURL).child("components").child(itemIdFromURL).remove();
-    ref = firebase.database().ref("ComputerSystem").child(parentIdFromURL).child("components");
-    newPostKey = ref.push().key;
-    ref.child(newPostKey).set({
-      [itemIdFromURL] : true
-    })
-    //   })
-      
-      ref = firebase.database().ref("ComputerSystem").child(itemIdFromURL);
-      newPostKey = ref.push().key;
-      ref.child(newPostKey).set({
+    	console.log('Different Category!');
+      // Delete the old item from its respective table.
+      var ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL)
+      ref.remove();
+
+      // Add the item to the new table with the same ID
+      var ref = firebase.database().ref(category).child(itemIdFromURL).set({
         "quantity" : parseInt(quantity),
         "EOLDate" : EOLDate,
         "assignedTo" : assignedTo,
@@ -445,10 +438,26 @@
         "subCategory" : subCategory,
         "vendor" : vendor,
         "assignmentDate" : assignmentDate
-        }).then(function(){
-        document.location.href = '/assets#itemAdded';
+      }).then(function(){
+        window.location.href = "/edit_item?id=" + parentIdFromURL + "&category=ComputerSystem";
       })
-  	}
+  	} else {
+      var ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).update({
+        "quantity" : parseInt(quantity),
+        "EOLDate" : EOLDate,
+        "assignedTo" : assignedTo,
+        "category" : category,
+        "description" : description,
+        "model" : model,
+        "purchaseDate" : purchaseDate,
+        "serialNumber" : serialNumber,
+        "subCategory" : subCategory,
+        "vendor" : vendor,
+        "assignmentDate" : assignmentDate
+      }).then(function(){
+        window.location.href = "/edit_item?id=" + parentIdFromURL + "&category=ComputerSystem";
+      })
+    }
   }
 
   function addDatabaseInfoToHTMLOnPage(currentItem){
@@ -512,20 +521,26 @@
 
   $('.saveButton').click(function(){
   	assignDatabaseValuesToGlobalVariables();
-    ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).update({
-    	"quantity" : parseInt(quantity),
-    	"EOLDate" : EOLDate,
-    	"assignedTo" : assignedTo,
-    	"category" : category,
-    	"description" : description,
-    	"model" : model,
-    	"purchaseDate" : purchaseDate,
-    	"serialNumber" : serialNumber,
-    	"subCategory" : subCategory,
-    	"vendor" : vendor,
-    	"assignmentDate" : assignmentDate
-    });
-    compareCategoryValuesToDetermineIfThereNeedsToBeATableChange();
+    //await wait(100);
+    if (parentIdFromURL){
+      console.log("There is a parent")
+      compareCategoryValuesToDetermineIfThereNeedsToBeATableChange();
+    } else {
+       console.log("There is no parent")
+      ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).update({
+        "quantity" : parseInt(quantity),
+        "EOLDate" : EOLDate,
+        "assignedTo" : assignedTo,
+        "category" : category,
+        "description" : description,
+        "model" : model,
+        "purchaseDate" : purchaseDate,
+        "serialNumber" : serialNumber,
+        "subCategory" : subCategory,
+        "vendor" : vendor,
+        "assignmentDate" : assignmentDate
+      });
+    }
   });
 
   function appendComponentDivIfItemIsComputerSystem(componentsArr, callback){
