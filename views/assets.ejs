@@ -38,7 +38,6 @@
       <ul class="nav navbar-nav">
         <li class="active"><a href="#">Home</a></li>
         <li><a href="#">About</a></li>
-        <li><a href="#">Documents</a></li>
       </ul>
     </div>
   </div>
@@ -54,9 +53,7 @@
                   <li class="active"><a href="Assets">View Assets</a></li>
                   <li><a href="add_item">Create Asset</a></li>
                   <li class="nav-divider"></li>
-                  <li><a href="#">Billing Info</a></li>
-                  <li><a href="#">Account Settings</a></li>
-                  <li><a href="#">Help</a></li>
+                  <li><a href="employees">Employees</a></li>
               </ul>
           </div>
           <!--/.well -->
@@ -67,6 +64,12 @@
       <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
       <h1>Assets</span></h1>
     </div>
+    <div id = "">
+      <ul class="nav navbar-nav">
+        <li>Show Components?<input type="checkbox" id="filterCheckbox"></li>
+      </ul>  
+    </div>
+    <button class="btn btn-primary" id="filterButton">Filter</button>
     <div class="col-md-12" id="Hardware">
     </div>
     <div class="col-md-12" id="Software">
@@ -121,7 +124,8 @@
 
     // Get current logged in user info
   firebase.auth().onAuthStateChanged(function(UserInfo) {
-      grabAssetData(createCellFromArrayInfo);
+    // Will initially call with the filter added
+      grabAssetData(true);
     if (UserInfo) {
         // User is signed in.
       self.currentUserUID = UserInfo.uid;
@@ -132,15 +136,15 @@
     }
   });
   
-  function grabAssetData(){
-    grabAllDataOnceFromDatabase("ComputerSystem", retrievedComputerSystemArray, createCellFromArrayInfo);
-    grabAllDataOnceFromDatabase("Hardware", retrievedHardwareArray, createCellFromArrayInfo);
-    grabAllDataOnceFromDatabase("Software", retrievedSoftwareArray, createCellFromArrayInfo);
+  function grabAssetData(filter){
+    grabAllDataOnceFromDatabase("ComputerSystem", retrievedComputerSystemArray, createCellFromArrayInfo, filter);
+    grabAllDataOnceFromDatabase("Hardware", retrievedHardwareArray, createCellFromArrayInfo, filter);
+    grabAllDataOnceFromDatabase("Software", retrievedSoftwareArray, createCellFromArrayInfo, filter);
   };
 
 
 // THis switch statement is messed up. Want each of the arrays to have the corresponding UIDs in them
-  function grabAllDataOnceFromDatabase(tableToQuery, array, callback){
+  function grabAllDataOnceFromDatabase(tableToQuery, array, callback, filter){
     //console.log(tableToQuery)
     var keysArr;
 
@@ -161,12 +165,9 @@
           default:
               console.log("default case")
       }
-      //array = snapshotToArray(snapshot, "retrieved" + tableToQuery + "KeyArray");
 
     }).then(function(){
-      //console.log(array)
-      //callback is createCellFromArrayInfo
-      callback(array, tableToQuery, replaceHTMLinDiv, keysArr);
+      callback(array, tableToQuery, replaceHTMLinDiv, keysArr, filter);
     });
   }
     
@@ -226,54 +227,117 @@
     return returnArr;
   }
 
-  function createCellFromArrayInfo(originalArray, category, callback, keysArr){
 
 
+  function createCellFromArrayInfo(originalArray, category, callback, keysArr, filter){
     var tempArray = [];
+
     var htmlToAppendToArray = '<h2>' + category + '</h2><hr><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr></thead><tbody>';
 
+    var newDivHTMLWithAllElements = '<h2>' + category + '</h2><hr><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr></thead><tbody>';
+
     for(var i =0; i < originalArray.length; i++){
+      if (originalArray[i].isComponent === true) {
+        // if it is a component we are not currently doing anything
+        console.log(originalArray[i]);
+         // This logic determines whether an item has expired 
+        if (convertedEOLDateAsInt < convertedPurchaseDateAsInt) {
+          newDivHTMLWithAllElements += '<tr id=' + keysArr[i] + ' class="' + category + ' expiredCell"><td>' + originalArray[i].assignedTo + '</td>';
+        } else if ((convertedEOLDateAsInt.getMonth() - convertedPurchaseDateAsInt.getMonth()) <= 2 ) {
+          console.log("item is expiring soon");
+          newDivHTMLWithAllElements += '<tr id=' + keysArr[i] + ' class="' + category + ' expiringCell"><td>' + originalArray[i].assignedTo + '</td>';
+        } else {
+           newDivHTMLWithAllElements += '<tr id=' + keysArr[i] + ' class="' + category + '"><td>' + originalArray[i].assignedTo + '</td>';
+        }
 
-      //convertDateToInt(originalArray[i].EOLDate);
-      var convertedPurchaseDateAsInt = convertDateToJavaScriptDateFormat(originalArray[i].purchaseDate);
-      var convertedEOLDateAsInt = convertDateToJavaScriptDateFormat(originalArray[i].EOLDate);
-      console.log(convertedPurchaseDateAsInt);
-      console.log(convertedEOLDateAsInt);
 
-      // This logic determines whether an item has expired 
-      if (convertedEOLDateAsInt < convertedPurchaseDateAsInt) {
-        console.log("This item is expired")
-        htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + ' expiredCell"><td>' + originalArray[i].assignedTo + '</td>';
-      } else if ((convertedEOLDateAsInt.getMonth() - convertedPurchaseDateAsInt.getMonth()) <= 2 ) {
-        console.log("item is expiring soon");
-        htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + ' expiringCell"><td>' + originalArray[i].assignedTo + '</td>';
+
+
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].vendor + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].model + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].description + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].quantity + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].serialNumber + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].subCategory + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].purchaseDate + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].assignmentDate + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + keysArr[i] + '""></i></td>';
+        newDivHTMLWithAllElements += '</tr>';
+
       } else {
-         htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + '"><td>' + originalArray[i].assignedTo + '</td>';
+        //convertDateToInt(originalArray[i].EOLDate);
+        var convertedPurchaseDateAsInt = convertDateToJavaScriptDateFormat(originalArray[i].purchaseDate);
+        var convertedEOLDateAsInt = convertDateToJavaScriptDateFormat(originalArray[i].EOLDate);
+        console.log(convertedPurchaseDateAsInt);
+        console.log(convertedEOLDateAsInt);
+
+        if (convertedEOLDateAsInt < convertedPurchaseDateAsInt) {
+          newDivHTMLWithAllElements += '<tr id=' + keysArr[i] + ' class="' + category + ' expiredCell"><td>' + originalArray[i].assignedTo + '</td>';
+        } else if ((convertedEOLDateAsInt.getMonth() - convertedPurchaseDateAsInt.getMonth()) <= 2 ) {
+          console.log("item is expiring soon");
+          newDivHTMLWithAllElements += '<tr id=' + keysArr[i] + ' class="' + category + ' expiringCell"><td>' + originalArray[i].assignedTo + '</td>';
+        } else {
+           newDivHTMLWithAllElements += '<tr id=' + keysArr[i] + ' class="' + category + '"><td>' + originalArray[i].assignedTo + '</td>';
+        }
+
+        // This logic determines whether an item has expired 
+        if (convertedEOLDateAsInt < convertedPurchaseDateAsInt) {
+          console.log("This item is expired")
+          htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + ' expiredCell"><td>' + originalArray[i].assignedTo + '</td>';
+        } else if ((convertedEOLDateAsInt.getMonth() - convertedPurchaseDateAsInt.getMonth()) <= 2 ) {
+          console.log("item is expiring soon");
+          htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + ' expiringCell"><td>' + originalArray[i].assignedTo + '</td>';
+        } else {
+           htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class="' + category + '"><td>' + originalArray[i].assignedTo + '</td>';
+        }
+
+
+        htmlToAppendToArray += '<td>' + originalArray[i].vendor + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].model + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].description + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].quantity + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].serialNumber + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].subCategory + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].purchaseDate + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].assignmentDate + '</td>';
+        htmlToAppendToArray += '<td>' + originalArray[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + keysArr[i] + '""></i></td>';
+        htmlToAppendToArray += '</tr>';
+
+
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].vendor + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].model + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].description + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].quantity + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].serialNumber + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].subCategory + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].purchaseDate + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].assignmentDate + '</td>';
+        newDivHTMLWithAllElements += '<td>' + originalArray[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + keysArr[i] + '""></i></td>';
+        newDivHTMLWithAllElements += '</tr>';
+       
+       }
       }
-      //console.log(convertedEOLDateAsInt.getMonth())
+      newDivHTMLWithAllElements += '</tbody></table>';
+      htmlToAppendToArray += '</tbody></table>';
+      console.log(htmlToAppendToArray)
+      console.log(newDivHTMLWithAllElements)
+      tempArray.push(htmlToAppendToArray)
+      //console.log(htmlToAppendToArray)
+      if (category === "Computer System" || category === "ComputerSystem") {
+        category = "ComputerSystem";
+        console.log(category)
+      }
+      if (filter) {
+        replaceHTMLinDiv("#", category, htmlToAppendToArray);
+      } else {
+        replaceHTMLinDiv("#", category, newDivHTMLWithAllElements);
+      }
+      colorCells()
+  }
 
-      // console.log("EOL: " + EOLAsInt + " Purchased: " + purchaseDateAsInt)
-      // console.log(EOLAsInt - purchaseDateAsInt)
-
-      //htmlToAppendToArray += '<tr id=' + keysArr[i] + ' class=' + category + '><td>' + originalArray[i].assignedTo + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].vendor + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].model + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].description + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].quantity + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].serialNumber + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].subCategory + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].purchaseDate + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].assignmentDate + '</td>';
-      htmlToAppendToArray += '<td>' + originalArray[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + keysArr[i] + '""></i></td>';
-      htmlToAppendToArray += '</tr>';
-    }
-    htmlToAppendToArray += '</tbody></table>';
-    tempArray.push(htmlToAppendToArray)
-    //console.log(htmlToAppendToArray)
-    if (category === "Computer System") {
-      category = "ComputerSystem"
-    }
-    replaceHTMLinDiv("#", category, htmlToAppendToArray);
+   function createCellFromArrayInfo2(originalArray, category, callback, keysArr){
+    grabAssetData();
+    replaceHTMLinDiv("#", "Software", newDivHTMLWithAllElements);
     colorCells()
   }
 
@@ -298,6 +362,7 @@ var snaptempval;
 var snaptempkeys;
 var snaptempvalitems = [];
 var temparray = [];
+var snapshotvaluesarray = [];
   // Handle the user clicking the remove ad icon
   $(document).on("click", ".fa-trash", function(){
     var adToRemove = $(event.target).context.dataset.id;
@@ -305,41 +370,65 @@ var temparray = [];
       if (r == true) {
           console.log(adToRemove);
           var tableToRemoveItemFrom = (this.parentNode.parentNode.getAttribute("class"));
-          //$("#" + adToRemove).remove();
-          console.log(tableToRemoveItemFrom);
+          $("#" + adToRemove).remove();
+          console.log(tableToRemoveItemFrom.split(" ")[0]);
           ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).once("value", function(snapshot){
             ref = firebase.database().ref("Employee").once("value", function(snapshot){
               snaptempval = Object.values(snapshot.val());
+              
               snaptempkeys = Object.keys(snapshot.val())
-              console.log(snapshot.val());
+              console.log(snaptempkeys);
+              console.log(snaptempval)
+
             }).then(function(){
               for(var i = 0; i < snaptempkeys.length; i++){
-                snaptempvalitems.push(snaptempval[i].items);
-                snaptempvalitems = Object.values(snaptempvalitems)
+                if (snaptempval[i].items) {
+                  snaptempvalitems.push(snaptempval[i].items);
+                  snapshotvaluesarray.push(snaptempval[i])
+                  console.log(snaptempval[i].items[i])
+                } else {
+                  snaptempvalitems.push({items: false})
+                }
+              
+              }
+                // //console.log(snaptempvalitems)
                 for(var j= 0; j < snaptempvalitems.length; j++){
                   temparray.push(Object.keys(snaptempvalitems[j]));
-
+                  console.log(temparray)
                 }
+
                  for (var k = 0; k < temparray.length; k++){
-                    console.log(temparray)
-                    if (adToRemove === temparray[i]){
-                    console.log(snaptempkeys[i])
+                    for (var l = 0; l < temparray[k].length; l++) {
+                      if (adToRemove === temparray[k][l]){
+                       console.log("found it")
+                       console.log(snapshotvaluesarray[k].name)
+                       console.log(tableToRemoveItemFrom.split(" ")[0])
+                       ref = firebase.database().ref(tableToRemoveItemFrom.split(" ")[0]).child(adToRemove).remove();  
+                       console.log(temparray[k]);
+                       
+                       removeItems("Employee", snaptempkeys[k], adToRemove);
+                      }
                     }
                   }
-               // console.log(snaptempval[i].items)
-                
-              }
+               //console.log(snaptempval[i].items)
+              //}
             })
           });
 
           // You will have to go to the employee whose name is the same as the currently pressed item - find their key and then execute
-          // ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).remove();  
+          // 
           return false;
       } else {
         return false;
       }
       var indexToRemove = this.id;
   });
+
+  async function removeItems(table, key, child){
+    console.log(table, key, child)
+    await wait(100);
+    ref = firebase.database().ref(table).child(key).child("items").child(child).remove();  
+  }
 
     // Handle the user clicking a cell. When clicked, we want to route to a new page that will allow the user to modify the data in the cell
 
@@ -349,6 +438,16 @@ var temparray = [];
     // Grabs the div's classes and parses the values to get the category name from it
     var category = ($(this).attr('class').split(" ")[0])
     window.location.href = "/edit_item?id=" + cellId + "&category=" + category;
+  });
+
+  $(document).on('click', "#filterButton", function(){
+    if ($("#filterCheckbox").is(":checked")) {
+      grabAssetData(false);
+      createCellFromArrayInfo2();
+    } else {
+      grabAssetData(true);
+    }
+    // Call the function with a parameter that sets the filtering to false
   });
 
     // This is the function that will inform the user of a successful logout

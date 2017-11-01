@@ -1,4 +1,5 @@
 <html lang="en"><head>
+
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="utf-8">
   <title>Assets</title>
@@ -6,60 +7,58 @@
 </head>
 <body>
 
-
-<!--formden.js communicates with FormDen server to validate fields and submit via AJAX -->
-<script type="text/javascript" src="https://formden.com/static/cdn/formden.js"></script>
-
 <!-- Special version of Bootstrap that is isolated to content wrapped in .bootstrap-iso -->
 <link rel="stylesheet" href="https://formden.com/static/cdn/bootstrap-iso.css">
 
 <!--Font Awesome (added because you use icons in your prepend/append)-->
 <link rel="stylesheet" href="https://formden.com/static/cdn/font-awesome/4.4.0/css/font-awesome.min.css">
 
+  <script
+  src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+  crossorigin="anonymous"></script>
+
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
 <!-- Inline CSS based on choices in "Settings" tab -->
 <style>.bootstrap-iso .formden_header h2, .bootstrap-iso .formden_header p, .bootstrap-iso form{font-family: Arial, Helvetica, sans-serif; color: black}.bootstrap-iso form button, .bootstrap-iso form button:hover{color: white !important;} .asteriskField{color: red;}</style>
 
 <!-- HTML Form (wrapped in a .bootstrap-iso div) -->
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+      <a class="navbar-brand" href="#">Intelisyn Asset Management</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 <div class="bootstrap-iso">
  <div class="container-fluid">
-  <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="Login.html">Intelisyn Asset Management</a>
-  </div>
-  <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav">
-          <li class="active"><a href="Dashboard.html">Home</a></li>
-          <li><a href="#about">Marketplace</a></li>
-          <li><a href="#contact">Contact</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a id="logoutButton" href="">Logout</a></li>
-      </ul>
-  </div>
   <!-- /.nav-collapse -->
   <div class="row row-offcanvas row-offcanvas-left">
         <div id="sidebarMenu">
             <div class="col-xs-6 col-sm-2 sidebar-offcanvas" id="sidebar" role="navigation" >
           <div class="sidebar-nav">
               <ul class="nav" style="margin-top: 10px;">
-                  <li><a href="Assets">Dashboard</a></li>
-                  <li class="active"><a href="Assetts.html">Assetts</a></li>
+                  <li class="active"><a href="Assets">View Assets</a></li>
+                  <li><a href="/views/add_item.html">Create Asset</a></li>
                   <li class="nav-divider"></li>
-                  <li><a href="Auction_Real_Estate.html">Auction Real Estate</a></li>
-                  <li><a href="#">My Sales</a></li>
-                  <li><a href="#">Create Ad</a></li>
-                  <li class="nav-divider"></li>
-                  <li><a href="#">Billing Info</a></li>
-                  <li><a href="#">Account Settings</a></li>
-                  <li><a href="#">Help</a></li>
+                  <li><a href="/views/employees.html">Employees</a></li>
               </ul>
           </div>
           <!--/.well -->
       </div>
+</div>
   <div class="row">
    <div class="col-md-6 col-sm-6 col-sm-10">
     <div class="jumbotron">
@@ -531,6 +530,8 @@
   $('.editButton').click(function(){
     toggleDivInput('.', 'saveButton');
     toggleDivInput('.', 'form-horizontal :input');
+
+    $("#assignedTo").prop("disabled", true);
   });
 
   $(document).on('click', '#addComponentButton',function(){
@@ -549,33 +550,28 @@
     } else {
       console.log("There is no parent")
       compareAssignedToValuesToDetermineIfChangesToDBNeedToBeMade();
-      ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).update({
-        "quantity" : parseInt(quantity),
-        "EOLDate" : EOLDate,
-        "assignedTo" : assignedTo,
-        "category" : category,
-        "description" : description,
-        "model" : model,
-        "purchaseDate" : purchaseDate,
-        "serialNumber" : serialNumber,
-        "subCategory" : subCategory,
-        "vendor" : vendor,
-        "assignmentDate" : assignmentDate
-      }).then(function(){
-        //window.location.href = "/assets";
-      });
     }
   });
 
+  var thisIsTheEmployeeReferenceNewKeyToSaveToDB;
+
   async function compareAssignedToValuesToDetermineIfChangesToDBNeedToBeMade(){
+
+   // Delete from the original employee's table
+      var employeeItemValuesToCompareAgainst = Object.values(employeesItems);
+      var employeeKeysToCompareAgainst = Object.keys(employeesItems);
+
+      for (var i = 0; i < employeesList.length; i++){
+        self.thisIsTheEmployeeReferenceNewKeyToSaveToDB = employeeKeysToCompareAgainst[i]
+      }
+
+
     // check to see whether the item belongs to the same employee upon saving
     // If it doesn't, remove the item from the old employee's table, and save
     // to the new employee's
     if ($('#assignedTo').val() !== initialAssignedToValue) {
       console.log('Assigned to values are different')
-        // Delete from the original employee's table
-      var employeeItemValuesToCompareAgainst = Object.values(employeesItems);
-      var employeeKeysToCompareAgainst = Object.keys(employeesItems);
+     
 
       for (var i =0; i < employeesList.length; i++) {
         if (employeeItemValuesToCompareAgainst[i].name === initialAssignedToValue) {
@@ -583,14 +579,45 @@
           ref = firebase.database().ref("Employee").child(employeeKeysToCompareAgainst[i]).child("items").child(itemIdFromURL).remove();
         } else if (employeeItemValuesToCompareAgainst[i].name === $('#assignedTo').val()){
           console.log("assigning true")
+          self.thisIsTheEmployeeReferenceNewKeyToSaveToDB = employeeKeysToCompareAgainst[i]
           ref = firebase.database().ref("Employee").child(employeeKeysToCompareAgainst[i]).child("items").update({
             [itemIdFromURL] : true
+          }).then(function(){
+            ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).update({
+              "quantity" : parseInt(quantity),
+              "EOLDate" : EOLDate,
+              "assignedTo" : assignedTo,
+              "category" : category,
+              "description" : description,
+              "model" : model,
+              "purchaseDate" : purchaseDate,
+              "serialNumber" : serialNumber,
+              "subCategory" : subCategory,
+              "vendor" : vendor,
+              "assignmentDate" : assignmentDate,
+              "assignedToID" : thisIsTheEmployeeReferenceNewKeyToSaveToDB
+            })
           });
         }
       }
+    }  else {
+        ref = firebase.database().ref(itemCategoryFromURL).child(itemIdFromURL).update({
+              "quantity" : parseInt(quantity),
+              "EOLDate" : EOLDate,
+              "assignedTo" : assignedTo,
+              "category" : category,
+              "description" : description,
+              "model" : model,
+              "purchaseDate" : purchaseDate,
+              "serialNumber" : serialNumber,
+              "subCategory" : subCategory,
+              "vendor" : vendor,
+              "assignmentDate" : assignmentDate,
+              "assignedToID" : thisIsTheEmployeeReferenceNewKeyToSaveToDB
+            })
+      }
       await wait(200);
       window.location.href = "/assets";
-    }
   }
 
   function appendComponentDivIfItemIsComputerSystem(componentsArr, callback){
@@ -710,6 +737,8 @@
 
   $( document ).ready(function() {
       parentIdFromURL = getUrlParameter('parentId');
+
+
       itemIdFromURL = getUrlParameter('id');
       itemCategoryFromURL = getUrlParameter('category');
       getEmployeesListingFromDB();
