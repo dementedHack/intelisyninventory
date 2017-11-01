@@ -407,7 +407,7 @@
     
   };
 
-  function assignDatabaseValuesToGlobalVariables(currentItem){
+  function assignInputValuesToGlobalVariables(currentItem){
   	self.category = $('#category').val();
   	self.vendor = $('#vendor').val();
 	  self.model = $('#model').val();
@@ -493,7 +493,7 @@
     $('#EOLDate').val(currentItem.EOLDate);
     self.counterForInitialAssignedToValue += 1;
 
-    // Assign the initial value for assignedTO
+    // Assign the initial value for assignedTo
     if (self.counterForInitialAssignedToValue == 1){
       self.initialAssignedToValue = $('#assignedTo').val();
     }
@@ -546,17 +546,31 @@
   });
 
   $('.saveButton').click(function(){
-  	assignDatabaseValuesToGlobalVariables();
+  	assignInputValuesToGlobalVariables();
+    var continueFunction = validateInputValues();
     //await wait(100);
     
-    if (parentIdFromURL){
-      console.log("There is a parent")
-      compareCategoryValuesToDetermineIfThereNeedsToBeATableChange();
+    if (continueFunction){
+      if (parentIdFromURL){
+        console.log("There is a parent")
+        compareCategoryValuesToDetermineIfThereNeedsToBeATableChange();
+      } else {
+        console.log("There is no parent")
+        compareAssignedToValuesToDetermineIfChangesToDBNeedToBeMade();
+      }
     } else {
-      console.log("There is no parent")
-      compareAssignedToValuesToDetermineIfChangesToDBNeedToBeMade();
+      alert("Not all required fields have been filled out! Please add values to fields with an asterisk next to them and try again.");
     }
+
   });
+
+  function validateInputValues(){
+    if ( (!($('#vendor').val())) || (!($('#model').val())) || (!($('#quantity').val())) || (!($('#description').val())) || (!($('#category').val())) || (!($('#subCategory').val())) || (!($('#purchaseDate').val())) || (!($('#assignmentDate').val())) || (!($('#assignedTo').val())) ){
+      return false;
+    } else {
+      return true;
+    }
+  }
 
   var thisIsTheEmployeeReferenceNewKeyToSaveToDB;
 
