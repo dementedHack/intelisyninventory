@@ -297,7 +297,7 @@
 
     var categories = ["", "Hardware", "Software", "ComputerSystem"]
 
-    var subCategory = [["Peripheral", "Audio", "Telephony", "Networking", "Storage", "CPU", "Memory", "Printer","Toner"], ["Project Management", "O.S.", "Application Management"], ["Laptop", "Desktop"]] 
+    var subCategory = [[""], ["Peripheral", "Audio", "Telephony", "Networking", "Storage", "CPU", "Memory", "Printer","Toner"], ["Project Management", "O.S.", "Application Management"], ["Laptop", "Desktop", "Smartphone", "Tablet"]] 
 
     var ref;
     var parentId;
@@ -333,7 +333,43 @@
       autoclose: true,
     });
     
-  })
+  });
+
+  $(document).on("change", "#category", function(){
+    var selectedCategory = $('#category').val();
+    
+    // Enable the sub cateogry field
+
+    // Create a switch case for the category that is selected. Based on the category, we will populate the data with the subcategory values
+    switch(selectedCategory){
+      case "Hardware":
+        $("#subCategory").prop('disabled', false);
+        changeSubcategoryValues(1);
+        break;
+      case "Software":
+        $("#subCategory").prop('disabled', false);
+        changeSubcategoryValues(2);
+        break;
+      case "ComputerSystem": 
+        $("#subCategory").prop('disabled', false);
+        changeSubcategoryValues(3);
+        break;
+      default:
+        // In the case that the original value of "" (or nothing) is selected, delete all values from the input and disable it.
+        $("#subCategory").prop('disabled', true);
+        changeSubcategoryValues(0);
+    }
+  });
+
+  function changeSubcategoryValues(iteration){
+    var newOptionValuesHTML = '<select name="subCategory" id="subCategory" class="form-control">';
+    for(var i = 0; i < subCategory[iteration].length; i++){
+      console.log(subCategory[iteration][i]);
+      newOptionValuesHTML += '<option value="' + subCategory[iteration][i] + '">' + subCategory[iteration][i] + '</option>';
+    }
+    newOptionValuesHTML += "</select>"
+    replaceHTMLinDiv("#", "subCategory", newOptionValuesHTML);
+  }
 
   $('#submitButton').click(function(){
       grabDataFromInputFieldsParseAndThenSendToDB();

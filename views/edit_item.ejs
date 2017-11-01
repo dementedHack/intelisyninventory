@@ -363,6 +363,10 @@
   // We store all the info for an employee
   var employeesItems = [];
 
+  var categoriesList = ["", "Hardware", "Software", "ComputerSystem"]
+
+    var subCategoryList = [[""], ["Peripheral", "Audio", "Telephony", "Networking", "Storage", "CPU", "Memory", "Printer","Toner"], ["Project Management", "O.S.", "Application Management"], ["Laptop", "Desktop", "Smartphone", "Tablet"]] 
+
   // These are the arrays we insert data from the DB into. They will contain snapshot objects
   var retrievedComputerSystemArray = [];
   var retrievedSoftwareArray = [];
@@ -532,12 +536,13 @@
     toggleDivInput('.', 'form-horizontal :input');
 
     $("#assignedTo").prop("disabled", true);
+    $("#subCategory").prop("disabled", true);
   });
 
   $(document).on('click', '#addComponentButton',function(){
     console.log(parentName);
     var parentName = $('#assignedTo').val();
-    window.location.href = "/add_item?parentId=" + itemIdFromURL+"&parentName="+ parentName;
+    window.location.href = "/add_item?parentId=" + itemIdFromURL + "&parentName=" + parentName;
   });
 
   $('.saveButton').click(function(){
@@ -734,6 +739,43 @@
     var category = ($(this).attr('class').split(" ")[0])
     window.location.href = "/edit_item?id=" + cellId + "&category=" + category + "&parentId=" + itemIdFromURL;
   });
+
+  $(document).on("change", "#category", function(){
+    var selectedCategory = $('#category').val();
+    
+    // Enable the sub cateogry field
+    console.log(selectedCategory)
+    // Create a switch case for the category that is selected. Based on the category, we will populate the data with the subcategory values
+    switch(selectedCategory){
+      case "Hardware":
+        $("#subCategory").prop('disabled', false);
+        changeSubcategoryValues(1);
+        break;
+      case "Software":
+        $("#subCategory").prop('disabled', false);
+        changeSubcategoryValues(2);
+        break;
+      case "ComputerSystem": 
+        $("#subCategory").prop('disabled', false);
+        changeSubcategoryValues(3);
+        break;
+      default:
+        // In the case that the original value of "" (or nothing) is selected, delete all values from the input and disable it.
+        $("#subCategory").prop('disabled', true);
+        changeSubcategoryValues(0);
+    }
+  });
+
+   function changeSubcategoryValues(iteration){
+    var newOptionValuesHTML = '<select name="subCategory" id="subCategory" class="form-control">';
+    for(var i = 0; i < subCategoryList[iteration].length; i++){
+      console.log(subCategoryList[iteration][i]);
+      newOptionValuesHTML += '<option value="' + subCategoryList[iteration][i] + '">' + subCategoryList[iteration][i] + '</option>';
+    }
+    newOptionValuesHTML += "</select>"
+    console.log(newOptionValuesHTML)
+    replaceHTMLinDiv("#", "subCategory", newOptionValuesHTML);
+  }
 
   $( document ).ready(function() {
       parentIdFromURL = getUrlParameter('parentId');
