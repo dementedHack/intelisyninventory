@@ -294,7 +294,10 @@
     //console.log(selector + divToReplace)
     $(selector + divToReplace).html(newHTMLToAppendToDiv);
   }
-
+var snaptempval;
+var snaptempkeys;
+var snaptempvalitems = [];
+var temparray = [];
   // Handle the user clicking the remove ad icon
   $(document).on("click", ".fa-trash", function(){
     var adToRemove = $(event.target).context.dataset.id;
@@ -302,9 +305,35 @@
       if (r == true) {
           console.log(adToRemove);
           var tableToRemoveItemFrom = (this.parentNode.parentNode.getAttribute("class"));
-          $("#" + adToRemove).remove();
+          //$("#" + adToRemove).remove();
           console.log(tableToRemoveItemFrom);
-          ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).remove();
+          ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).once("value", function(snapshot){
+            ref = firebase.database().ref("Employee").once("value", function(snapshot){
+              snaptempval = Object.values(snapshot.val());
+              snaptempkeys = Object.keys(snapshot.val())
+              console.log(snapshot.val());
+            }).then(function(){
+              for(var i = 0; i < snaptempkeys.length; i++){
+                snaptempvalitems.push(snaptempval[i].items);
+                snaptempvalitems = Object.values(snaptempvalitems)
+                for(var j= 0; j < snaptempvalitems.length; j++){
+                  temparray.push(Object.keys(snaptempvalitems[j]));
+
+                }
+                 for (var k = 0; k < temparray.length; k++){
+                    console.log(temparray)
+                    if (adToRemove === temparray[i]){
+                    console.log(snaptempkeys[i])
+                    }
+                  }
+               // console.log(snaptempval[i].items)
+                
+              }
+            })
+          });
+
+          // You will have to go to the employee whose name is the same as the currently pressed item - find their key and then execute
+          // ref = firebase.database().ref(tableToRemoveItemFrom).child(adToRemove).remove();  
           return false;
       } else {
         return false;

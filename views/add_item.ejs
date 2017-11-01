@@ -297,10 +297,13 @@
 
   var employeesList = [];
 
+    var categories = ["", "Hardware", "Software", "Computer System"]
+
     var subCategory = [["Peripheral", "Audio", "Telephony", "Networking", "Storage", "CPU", "Memory", "Printer","Toner"], ["Project Management", "O.S.", "Application Management"], ["Laptop", "Desktop"]] 
 
     var ref;
     var parentId;
+    var parentName;
     // Get current logged in user info
     firebase.auth().onAuthStateChanged(function(UserInfo) {
       grabEmployeesListFromDB();
@@ -314,7 +317,7 @@
     }
 
     parentItemId = getUrlParameter('parentId');
-    console.log(parentItemId);
+    parentName = getUrlParameter('parentName');
   });
 
   var newItemPropertiesArray = [];
@@ -331,11 +334,12 @@
       todayHighlight: true,
       autoclose: true,
     });
+    
+  })
 
-    $('#submitButton').click(function(){
+  $('#submitButton').click(function(){
       grabDataFromInputFieldsParseAndThenSendToDB();
     })
-  })
 
   function grabDataFromInputFieldsParseAndThenSendToDB(){
     grabDataFromInputFields(pushNewKeyIntoDatabaseAndAssignToVariable);
@@ -353,21 +357,18 @@
       newPostKey = ref.push().key;
       console.log(parentItemId)
       saveNewItemToCorrespondingDatabase(newPostKey, 'ComputerSystem', parentItemId);
-
     } else { 
       ref = firebase.database().ref("Asset");
       newPostKey = ref.push().key;
       saveNewItemToCorrespondingDatabase(newPostKey, newItemPropertiesArray[6], null);
-      saveNewItemToEmployeeDatabase(newPostKey, employeesList[1].key,"Employee")
     }
-  }
 
-  function saveNewItemToEmployeeTable(){
-    var employeeRef = $('#assignedTo').val();
-    ref = firebase.database().ref("Employee").child(employeeRef).set({
-
-    });
-
+    // Iterate through the employees list to determine where to save item to
+    for (var i =0; i < employeesList.length; i++) {
+      if (employeesList[i].name === ($('#assignedTo').val())) {
+          saveNewItemToEmployeeDatabase(newPostKey, employeesList[i].key)
+      }
+    }
   }
 
   function saveNewItemToCorrespondingDatabase(postKey, tableReference, parentItemId) {
@@ -423,46 +424,68 @@
     //Creates a new UID in the database and assigns to a variable so we can save to it
   }
 
-  function saveNewItemToEmployeeDatabase(postKey, employeeId, tableReference) {
-   ref = firebase.database().ref(tableReference).child(employeeId).child("items").child(postKey);
-    ref.set({
-      "assignedTo" : newItemPropertiesArray[0],
-      "vendor" : newItemPropertiesArray[1],
-      "model" : newItemPropertiesArray[2],
-      "quantity" : newItemPropertiesArray[3],
-      "description" : newItemPropertiesArray[4],
-      "serialNumber" : newItemPropertiesArray[5],
-      "category" : newItemPropertiesArray[6],
-      "subCategory" : newItemPropertiesArray[7],
-      "purchaseDate" : newItemPropertiesArray[8],
-      "assignmentDate" : newItemPropertiesArray[9],
-      "EOLDate" : newItemPropertiesArray[10],
-      "isComponent" : false
-      });
+  function saveNewItemToEmployeeDatabase(postKey, employeeId) {
+   ref = firebase.database().ref("Employee").child(employeeId).child("items").child(postKey);
+    ref.set(true);
   }
     
-    function wait(ms) {
-      return new Promise(r => setTimeout(r, ms));
-    }
+ var newAssignedToValue;
 
   async function grabEmployeesListFromDB(){
     var newArray;
      ref = firebase.database().ref("Employee").once("value", function(snapshot){
         self.employeesList = snapshotToArray(snapshot)
      }).then(function(){
-      console.log(employeesList)
-      var newHTML = '<select name="assignedTo" class="form-control" id="assignedTo">';
+      
+      if (parentName){
+        
+        self.categories.splice(-1,1);
+        //assigns the current parentID to the assignedTo field
+        for (var i = 0; i < employeesList.length; i++){
+          if (parentName === employeesList[i].name){
+            console.log(employeesList[i].name)
+            newAssignedToValue = employeesList[i].name;
+            
+            //$("#assignedTo").prop('disabled', true);
+          }
+        }
+        
+      }
+
+
+      console.log(categories.length)
+      var newHTMLForCategoriesDiv = '<select name="category" id="category" name="category" class="form-control">'
+      var newHTMLForAssignedToDiv = '<select name="assignedTo" class="form-control" id="assignedTo">';
+
+      for(var i = 0; i < categories.length; i++){
+        newHTMLForCategoriesDiv += '<option value="' + categories[i] + '">' + categories[i] + '</option>'
+      }
+
       for(var i =0; i < employeesList.length; i++){
-        newHTML+= '<option value=' + employeesList[i].name + '>' + employeesList[i].name + '</option>'
+        console.log(employeesList.length)
+        newHTMLForAssignedToDiv += '<option value=\"' + employeesList[i].name + '\">' + employeesList[i].name + '</option>'
           
       }
-      newHTML += '</select></div>';
-      console.log(newHTML)
-      replaceHTMLinDiv("#", "assignedTo", newHTML);
+      newHTMLForAssignedToDiv += '</select></div>';
+      newHTMLForCategoriesDiv += '</select>'
+      console.log(newHTMLForAssignedToDiv)
+      replaceHTMLinDiv("#", "assignedTo", newHTMLForAssignedToDiv);
+      replaceHTMLinDiv("#", "category", newHTMLForCategoriesDiv);
+
+
+      if(parentName){
+        changeAssignedToValue();
+      }
+
      })
+
 
   }
 
+  function changeAssignedToValue(){
+    $('#assignedTo option:contains("' + newAssignedToValue + '")').prop('selected','selected');
+    $("#assignedTo").prop('disabled', true);
+  }
 
   function snapshotToArray(snapshot){
     var returnArr = [];
@@ -499,7 +522,9 @@
       }
   }
 
-
+   function wait(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
 
 
 </script>
