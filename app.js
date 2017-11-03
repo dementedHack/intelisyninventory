@@ -12,6 +12,7 @@ var edit_item = require('./routes/edit_item');
 var assets = require('./routes/assets');
 var employees = require('./routes/employees');
 var add_employee = require('./routes/add_employee');
+var employee_assets = require('./routes/employee_assets');
 
 
 var app = express();
@@ -40,6 +41,7 @@ app.use('/edit_item', edit_item);
 app.use('/assets', assets);
 app.use('/employees', employees);
 app.use('/add_employee', add_employee);
+app.use('/employee_assets', employee_assets);
 
 
 // catch 404 and forward to error handler

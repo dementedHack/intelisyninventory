@@ -2,7 +2,7 @@
 
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="utf-8">
-  <title>Employees</title>
+  <title>Employee Assets</title>
 
 </head>
 <body>
@@ -92,7 +92,7 @@
                   <li class="active"><a href="Assets">View Assets</a></li>
                   <li><a href="add_item">Create Asset</a></li>
                   <li class="nav-divider"></li>
-                  <li><a href="#">Employees</a></li>
+                  <li><a href="/employees">Employees</a></li>
               </ul>
           </div>
           <!--/.well -->
@@ -101,13 +101,13 @@
    <div class="col-md-6 col-sm-6 col-sm-10">
     <div class="jumbotron">
       <a href="#" class="visible-xs" data-toggle="offcanvas"><i class="fa fa-lg fa-reorder"></i></a>
-      <h1>Employees</span></h1>
+      <h1 id="employeeName"></span></h1>
     </div>
-    <div class="col-md-12" id="employeesTable">
+    <div class="col-md-12" id="employeeListingsTable">
     </div>
     <div>
-      <button class="btn btn-primary col-md-2" id="myBtn">
-      Add Employee
+      <button class="btn btn-primary col-md-2" id="addItemButton">
+      Add Item
       </button>
     </div>
     <!-- The Modal -->
@@ -151,11 +151,16 @@
 
   var ref;
 
-  var employeeListingsArray = [];
+  var employeeIdListingsArray = [];
+  var employeeItemListingsArray = [];
+  var employeeSnapshot;
+
+  var counter = 0;
+  var keysArray = [];
 
     // Get current logged in user info
   firebase.auth().onAuthStateChanged(function(UserInfo) {
-    var employeeListingsArray = getEmployeeListings(createCellFromArrayInfo);
+    employeeIdListingsArray = getEmployeeIdListings(getEmployeeItemListings);
     if (UserInfo) {
         // User is signed in.
       self.currentUserUID = UserInfo.uid;
@@ -166,50 +171,28 @@
     }
   });
 
-
-  var counter = 0;
-  var keysArray = [];
-
-  // Convert the snapshot we receive from the DB into an array by pushing each snapshot child into the global array.
-  function snapshotToArray(snapshot){
-    console.log(snapshot)
-    counter += 1;
-    var returnArr = [];
-    var newArray = {};
-
-    snapshot.forEach(function(childSnapshot) {
-
-
-
-        var item = childSnapshot.val();
-        item.key = childSnapshot.key;
-
-        returnArr.push(item);
-
-        newArray[keysArray] = item.key;
-        newItem = (newArray[keysArray])
-
-
-        keysArray.push(item.key)
-
-    });
-    return returnArr;
-  }
-
   function createCellFromArrayInfo(array){
+    console.log(array)
     var tempArray = [];
-    var htmlToAppendToArray = '<div><table class="table table-striped table-hover"><thead><tr><th>Name</th><th>Date Created</th></tr></thead><tbody></div>';
+    var htmlToAppendToArray = '<h2>' + "Coming Soon" + '</h2><hr><table class="table table-striped table-hover"><thead><tr><th>Assigned To</th><th>Vendor</th><th>Model</th><th>Description</th><th>Qty.</th><th>Serial Number</th><th>SubCategory</th><th>Assignment Date</th><th>Purchase Date</th><th>E.O.L. Date</th></tr></thead><tbody>';
 
     for(var i =0; i < array.length; i++){
-      htmlToAppendToArray += '<td data-employee-id="' + i +'">' + array[i].name + '</td>';
-      htmlToAppendToArray += '<td>' + array[i].dateCreated + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + array[i].id + '""></i></td>';
+      htmlToAppendToArray += '<td>' + array[i].assignedTo + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].vendor + '</td>'
+      htmlToAppendToArray += '<td>' + array[i].model + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].description + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].quantity + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].serialNumber + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].subCategory + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].purchaseDate + '</td>';
+      htmlToAppendToArray += '<td>' + array[i].EOLDate + '</td><td><i class="fa fa-trash" aria-hidden="true" style="float: right;" data-id="' + array[i].id + '""></i></td>';;
       htmlToAppendToArray += '</tr>';
     }
     htmlToAppendToArray += '</tbody></table>';
     tempArray.push(htmlToAppendToArray)
     //console.log(htmlToAppendToArray)
-
-    replaceHTMLinDiv('#', 'employeesTable', htmlToAppendToArray);
+    $('#employeeName').text(employeeSnapshot.name);
+    replaceHTMLinDiv('#', 'employeeListingsTable', htmlToAppendToArray);
 
   }
 
@@ -220,8 +203,6 @@
   }
 
   // Handle the user clicking the remove ad icon
-
-  // Change functionality to erase references of all data items in DB
   $(document).on("click", ".fa-trash", function(){
     var adToRemove = $(event.target).context.dataset.id;
     var r = confirm("You are about to delete an item!\nClick OK to continue operation or Cancel to dismiss.\n");
@@ -238,62 +219,86 @@
       var indexToRemove = this.id;
   });
 
-  $("#submitEmployeeInfo").click(function(){
-    var employeeName = $("#employeeName").val();
-    // Save new employee to the database
-    saveEmployeeToDatabase(employeeName);
+  function getEmployeeIdListings(callback){
+    var employeeIdFromURL = getUrlParameter("id");
+    var employeeItems;
 
-  });
-
-  function saveEmployeeToDatabase(name){
-    var today = new Date();
-    var dd = today.getDate();
-    var mm = today.getMonth()+1; //January is 0!
-
-    var yyyy = today.getFullYear();
-    if(dd<10){
-        dd='0'+dd;
-    } 
-    if(mm<10){
-        mm='0'+mm;
-    } 
-    var today = mm+'/'+dd+'/'+yyyy;
-
-    console.log(today)
-
-    var ref = firebase.database().ref("Employee");
-    newPostKey = ref.push().key;
-    ref.child(newPostKey).set({
-      "name" : name,
-      "dateCreated" : today
-    }).then(function(){
-      getEmployeeListings(createCellFromArrayInfo);
-    })
-  };
-
-  function getEmployeeListings(callback){
-    var ref = firebase.database().ref("Employee");
+    console.log(employeeIdFromURL)
+    var ref = firebase.database().ref("Employee").child(employeeIdFromURL);
     ref.once("value", function(snapshot){
-      employeeListingsArray = snapshotToArray(snapshot)
+      employeeSnapshot = snapshot.val();
+      // Convert the items object into an array that we can pass into the callback
+        if(employeeSnapshot.items){
+          employeeItems = Object.keys(employeeSnapshot.items);
+        }
+      //console.log((employeeItems))
+      //employeeListingsArray = snapshotToArray(snapshot)
     }).then(function(){
-      callback(employeeListingsArray);
+
+    $('#employeeName').text(employeeSnapshot.name);
+      callback(employeeItems);
     })
   }
+
+  function getEmployeeItemListings(employeeIds, callback){
+    if (employeeIds){  
+      for(var i = 0; i < employeeIds.length; i++){
+        grabAllDataOnceFromDatabase(employeeIds[i], createCellFromArrayInfo);
+      }
+    } else {
+      createCellFromArrayInfo([], createCellFromArrayInfo);
+    }
+  }
+
+
+  // THis switch statement is messed up. Want each of the arrays to have the corresponding UIDs in them
+  function grabAllDataOnceFromDatabase(id, callback){
+
+    ref = firebase.database().ref("Hardware").child(id).once("value", function(snapshot){
+      if(!snapshot.val()){
+        console.log("There is no value in the hardware table");
+        ref = firebase.database().ref("Software").child(id).once("value", function(snapshot){
+          if(!snapshot.val()){
+            console.log("There is no value in the software table");
+            ref = firebase.database().ref("ComputerSystem").child(id).once("value", function(snapshot){
+               employeeItemListingsArray.push(snapshot.val())
+            });
+          } else {
+            employeeItemListingsArray.push(snapshot.val())
+          }
+        });
+      } else {
+        employeeItemListingsArray.push(snapshot.val())
+      }
+    }).then(function(){
+      callback(employeeItemListingsArray);
+    });
+  }
+    
 
     // Handle the user clicking a cell. When clicked, we want to route to a new page that will allow the user to modify the data in the cell
 
     // Route to new page while sending the id 
-  $(document).on("click", "tr", function(){
-    var employeeDataValueFromHTML = ($(event.target).context.dataset.employeeId);
+  $(document).on("click", "#addItemButton", function(){
+    //var cellId = ($(this).parent().context.id);
     // Grabs the div's classes and parses the values to get the category name from it
-    var employeeIdToLookup = employeeListingsArray[employeeDataValueFromHTML].key;
-    window.location.href = "/employee_assets?id=" + employeeIdToLookup;
+    //var category = ($(this).attr('class').split(" ")[0])
+    window.location.href = "/add_item";
+  });
+
+   $(document).on("click", "tr", function(){
+    var cellId = ($(this).parent().context.id);
+    console.log(cellId)
+    // Grabs the div's classes and parses the values to get the category name from it
+    //var category = ($(this).attr('class').split(" ")[0])
+    //window.location.href = "/edit_item?id=" + cellId + "&category=" + category;
   });
 
 
-    function wait(ms) {
-      return new Promise(r => setTimeout(r, ms));
-    }
+
+  function wait(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
 
   $( document ).ready(function() {
     if (window.location.hash === '#itemAdded') {
@@ -302,31 +307,18 @@
 
   });
 
-    // script for adding the modal
+  function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
 
-  // Get the modal
-  var modal = document.getElementById('myModal');
+      for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
 
-  // Get the button that opens the modal
-  var btn = document.getElementById("myBtn");
-
-  // Get the <span> element that closes the modal
-  var span = document.getElementsByClassName("close")[0];
-
-  // When the user clicks the button, open the modal 
-  btn.onclick = function() {
-      modal.style.display = "block";
-  }
-
-  // When the user clicks on <span> (x), close the modal
-  submitEmployeeInfo.onclick = function() {
-      modal.style.display = "none";
-  }
-
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function(event) {
-      if (event.target == modal) {
-          modal.style.display = "none";
+          if (sParameterName[0] === sParam) {
+              return sParameterName[1] === undefined ? true : sParameterName[1];
+          }
       }
   }
 
